@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Game } from '../models/Game';
 import { Player } from '../models/Player';
+import { Play } from '../models/Play';
 import Card from '../components/common/Card';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -90,23 +91,29 @@ const AddGamePlay: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     try {
+      // Calculate duration in minutes
+      const startTime = new Date(formData.start_time);
+      const endTime = new Date(formData.end_time);
+      const durationInMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+  
       // Format data for API
-      const payload = {
+      const payload: Partial<Play> = {
         game_id: parseInt(formData.game_id),
-        start_time: new Date(formData.start_time).toISOString(),
-        end_time: new Date(formData.end_time).toISOString(),
-        mode: formData.mode,
-        notes: formData.notes,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        duration: durationInMinutes,
+        mode: formData.mode || undefined,
+        notes: formData.notes || undefined,
         results: formData.results.map(result => ({
           player_id: parseInt(result.player_id),
-          score: result.score ? parseInt(result.score) : null,
+          score: result.score ? parseInt(result.score) : undefined,
           rank: parseInt(result.rank),
-          notes: result.notes
+          notes: result.notes || undefined
         }))
       };
-
+  
       await createGamePlay(payload);
       navigate('/game-plays');
     } catch (err) {

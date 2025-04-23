@@ -8,11 +8,13 @@ import PlayerDirectory from './pages/PlayerDirectory';
 import PlayerDetail from './pages/PlayerDetail';
 import GamePlayLog from './pages/GamePlayLog';
 import AddGamePlay from './pages/AddGamePlay';
+import './index.css';
 import './App.css';
 
 function App() {
   return (
     <Router>
+      <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <main className="py-4">

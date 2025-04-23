@@ -32,12 +32,12 @@ const RecentPlays: React.FC<RecentPlaysProps> = ({ plays, loading }) => {
                     to={`/games/${play.game_id}`}
                     className="font-medium text-blue-600 hover:text-blue-800"
                   >
-                    {play.game_name}
+                    {play.game_id}
                   </Link>
                   <div className="text-sm text-gray-600 mt-1">
                     {formatDate(play.start_time)} • 
                     {formatDuration(calculateDuration(play.start_time, play.end_time))} • 
-                    {play.players.length} players
+                    {play.results.length} players
                   </div>
                 </div>
                 <Link 
@@ -49,7 +49,7 @@ const RecentPlays: React.FC<RecentPlaysProps> = ({ plays, loading }) => {
               </div>
               <div className="mt-2">
                 <div className="text-sm text-gray-600">
-                  Winner: {play.players.find(p => p.rank === 1)?.player_name || 'Unknown'}
+                  Winner: {play.results.find(p => p.rank === 1)?.player_id || 'Unknown'}
                 </div>
                 {play.notes && (
                   <div className="text-sm text-gray-500 mt-1 truncate">

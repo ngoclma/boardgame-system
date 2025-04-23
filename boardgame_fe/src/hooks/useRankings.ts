@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { rankingsAPI } from '../utils/api';
-import { Ranking } from '../models/Play';
+import { Ranking } from '../models/Ranking';
 
 export const useRankings = () => {
   const [loading, setLoading] = useState<boolean>(false);

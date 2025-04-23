@@ -31,13 +31,13 @@ const GameLibrary: React.FC = () => {
 
   const filteredAndSortedGames = games
     .filter(game =>
-      game.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      game.publisher.toLowerCase().includes(searchTerm.toLowerCase())
+      game.name.toLowerCase().includes(searchTerm.toLowerCase())
+      // game.publisher.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'publisher') return a.publisher?.localeCompare(b.publisher);
-      return b.year_published - a.year_published;
+      // if (sortBy === 'publisher') return a.publisher?.localeCompare(b.publisher);
+      return b.release_year - a.release_year;
     });
 
   if (loading) return <LoadingSpinner />;
@@ -84,10 +84,10 @@ const GameLibrary: React.FC = () => {
               <div className="p-4">
                 <h2 className="text-xl font-bold mb-2">{game.name}</h2>
                 <p className="text-gray-600 mb-2">{game.publisher}</p>
-                <p className="text-sm text-gray-500">{game.year_published}</p>
+                <p className="text-sm text-gray-500">{game.release_year}</p>
                 <div className="mt-4 text-sm text-gray-600">
                   {game.min_players}-{game.max_players} players • 
-                  {game.min_playtime}-{game.max_playtime} min
+                  {game.avg_play_time} min
                 </div>
                 <p className="mt-2 text-sm text-gray-600 line-clamp-2">
                   {game.description}

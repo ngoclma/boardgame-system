@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Ranking, RankingPeriod } from '../../models/Play';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Ranking, RankingPeriod } from '../../models/Ranking';
 import Card from '../common/Card';
 import { formatPercentage, formatVictoryPoints, formatRankWithColor } from '../../utils/formatters';
 import { RANKING_PERIODS } from '../../utils/constants';
@@ -54,8 +55,8 @@ const RankingTable: React.FC<RankingTableProps> = ({
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
                 <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Plays</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">V. Points</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">V. Rate</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Victory Points</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -66,33 +67,33 @@ const RankingTable: React.FC<RankingTableProps> = ({
                   </td>
                 </tr>
               ) : (
-                rankings.map((ranking) => {
-                  const { text, color } = formatRankWithColor(ranking.rank);
-                  return (
-                    <tr key={ranking.player_id} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <span className={`font-bold ${color}`}>{text}</span>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <a 
-                          href={`/players/${ranking.player_id}`} 
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          {ranking.player_name}
-                        </a>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-right">
-                        {ranking.plays}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-right">
-                        {formatVictoryPoints(ranking.victory_points)}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-right">
-                        {formatPercentage(ranking.victory_rate)}
-                      </td>
-                    </tr>
-                  );
-                })
+                rankings.map((ranking) => (
+                  <tr key={ranking.player_id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {(() => {
+                        const { text, color } = formatRankWithColor(ranking.rank);
+                        return <span style={{ color }}>{text}</span>;
+                      })()}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <Link 
+                        to={`/players/${ranking.player_id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        {ranking.player_name}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-right">
+                      {ranking.plays}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-right">
+                      {formatVictoryPoints(ranking.victory_points)}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-right">
+                      {formatPercentage(ranking.victory_rate)}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>

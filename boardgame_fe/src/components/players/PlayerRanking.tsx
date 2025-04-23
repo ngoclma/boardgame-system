@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Ranking, RankingPeriod } from '../../models/Play';
+import { Ranking, RankingPeriod } from '../../models/Ranking';
 import { useRankings } from '../../hooks/useRankings';
 import Card from '../common/Card';
 import { RANKING_PERIODS, YEARS_OPTIONS } from '../../utils/constants';

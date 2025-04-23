@@ -1,18 +1,18 @@
 import apiClient from './index';
-import { PlayerRanking, GameRanking, PlayerStats } from '../models/Ranking';
+import { Ranking, PlayerStats } from '../models/Ranking';
 
-export const getOverallRanking = async (): Promise<PlayerRanking[]> => {
-  const response = await apiClient.get<PlayerRanking[]>('/rankings/overall');
+export const getOverallRanking = async (): Promise<Ranking[]> => {
+  const response = await apiClient.get<Ranking[]>('/rankings/overall');
   return response.data;
 };
 
-export const getYearlyRanking = async (year: number): Promise<PlayerRanking[]> => {
-  const response = await apiClient.get<PlayerRanking[]>(`/rankings/yearly/${year}`);
+export const getYearlyRanking = async (year: number): Promise<Ranking[]> => {
+  const response = await apiClient.get<Ranking[]>(`/rankings/yearly/${year}`);
   return response.data;
 };
 
-export const getGameRanking = async (gameId: number): Promise<GameRanking> => {
-  const response = await apiClient.get<GameRanking>(`/rankings/games/${gameId}`);
+export const getGameRanking = async (gameId: number): Promise<Ranking> => {
+  const response = await apiClient.get<Ranking>(`/rankings/games/${gameId}`);
   return response.data;
 };
 

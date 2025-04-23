@@ -1,4 +1,5 @@
-import { Play, Ranking, PlayerGameStats } from '../models/Play';
+import { Play } from '../models/Play';
+import { PlayerStats, Ranking} from '../models/Ranking';
 import { Game } from '../models/Game';
 import { Player } from '../models/Player';
 
@@ -35,7 +36,7 @@ export const gamesAPI = {
 export const playersAPI = {
   getAll: () => fetchAPI<Player[]>('/players'),
   getById: (id: number) => fetchAPI<Player>(`/players/${id}`),
-  getGameStats: (id: number) => fetchAPI<PlayerGameStats[]>(`/players/${id}/games`),
+  getGameStats: (id: number) => fetchAPI<PlayerStats[]>(`/players/${id}/games`),
   getRankings: (period: string = 'all-time') => fetchAPI<Ranking[]>(`/rankings/players?period=${period}`),
   getGameRankings: (gameId: number, period: string = 'all-time') => 
     fetchAPI<Ranking[]>(`/rankings/games/${gameId}/players?period=${period}`),

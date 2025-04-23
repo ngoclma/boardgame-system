@@ -54,7 +54,7 @@ const GamePlayLog: React.FC = () => {
 
   const filteredGamePlays = gamePlays.filter(play => {
     const matchesGame = !filters.gameId || play.game_id === parseInt(filters.gameId);
-    const matchesPlayer = !filters.playerId || play.players.some(r => r.player_id === parseInt(filters.playerId));
+    const matchesPlayer = !filters.playerId || play.results.some(r => r.player_id === parseInt(filters.playerId));
     const matchesDateFrom = !filters.dateFrom || new Date(play.start_time) >= new Date(filters.dateFrom);
     const matchesDateTo = !filters.dateTo || new Date(play.start_time) <= new Date(filters.dateTo);
     
@@ -157,7 +157,7 @@ const GamePlayLog: React.FC = () => {
                         {play.mode || 'Standard Game'}
                       </p>
                       <div className="mt-2">
-                        {play.players
+                        {play.results
                           .sort((a, b) => a.rank - b.rank)
                           .map((result, index) => (
                             <span key={result.player_id} className="text-sm text-gray-600">

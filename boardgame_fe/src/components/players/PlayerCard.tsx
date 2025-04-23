@@ -26,19 +26,19 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-4">
             <div>
               <div className="text-sm text-gray-500">Total Plays</div>
-              <div className="text-xl font-bold">{player.no_total_play}</div>
+              {/* <div className="text-xl font-bold">{player.no_total_play}</div> */}
             </div>
             <div>
               <div className="text-sm text-gray-500">Wins</div>
-              <div className="text-xl font-bold">{player.no_total_wins}</div>
+              {/* <div className="text-xl font-bold">{player.no_total_wins}</div> */}
             </div>
             <div>
               <div className="text-sm text-gray-500">Victory Points</div>
-              <div className="text-xl font-bold">{player.total_victory_points.toFixed(2)}</div>
+              {/* <div className="text-xl font-bold">{player.total_victory_points.toFixed(2)}</div> */}
             </div>
             <div>
               <div className="text-sm text-gray-500">Victory Rate</div>
-              <div className="text-xl font-bold">{formatPercentage(player.victory_rate)}</div>
+              {/* <div className="text-xl font-bold">{formatPercentage(player.victory_rate)}</div> */}
             </div>
           </div>
         </div>

@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { PlayerGameStats } from '../../models/Play';
+import { PlayerStats } from '../../models/Ranking';
 import Card from '../common/Card';
 import { formatPercentage, formatVictoryPoints, formatOrdinal } from '../../utils/formatters';
 import { Link } from 'react-router-dom';
 
 interface PlayerGamePerformanceProps {
-  gameStats: PlayerGameStats[];
+  gameStats: PlayerStats[];
   loading: boolean;
 }
 
 const PlayerGamePerformance: React.FC<PlayerGamePerformanceProps> = ({ gameStats, loading }) => {
-  const [sortBy, setSortBy] = useState<keyof PlayerGameStats>('plays');
+  const [sortBy, setSortBy] = useState<keyof PlayerStats>('player_id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  const handleSort = (column: keyof PlayerGameStats) => {
+  const handleSort = (column: keyof PlayerStats) => {
     if (column === sortBy) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -35,7 +35,7 @@ const PlayerGamePerformance: React.FC<PlayerGamePerformanceProps> = ({ gameStats
     return 0;
   });
 
-  const renderSortIcon = (column: keyof PlayerGameStats) => {
+  const renderSortIcon = (column: keyof PlayerStats) => {
     if (column !== sortBy) return null;
     return sortDirection === 'asc' ? '↑' : '↓';
   };
@@ -58,7 +58,7 @@ const PlayerGamePerformance: React.FC<PlayerGamePerformanceProps> = ({ gameStats
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Game
                 </th>
-                <th 
+                {/* <th 
                   className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('plays')}
                 >
@@ -81,10 +81,10 @@ const PlayerGamePerformance: React.FC<PlayerGamePerformanceProps> = ({ gameStats
                   onClick={() => handleSort('best_rank')}
                 >
                   Best Rank {renderSortIcon('best_rank')}
-                </th>
+                </th> */}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            {/* <tbody className="bg-white divide-y divide-gray-200">
               {sortedStats.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-3 py-4 text-center text-gray-500">
@@ -117,7 +117,7 @@ const PlayerGamePerformance: React.FC<PlayerGamePerformanceProps> = ({ gameStats
                   </tr>
                 ))
               )}
-            </tbody>
+            </tbody> */}
           </table>
         </div>
       )}

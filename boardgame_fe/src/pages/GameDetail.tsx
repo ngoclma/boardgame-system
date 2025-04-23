@@ -61,11 +61,11 @@ const GameDetail: React.FC = () => {
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-gray-500">Designers</h3>
-              <p className="mt-1">{game.designers}</p>
+              {/* <p className="mt-1">{game.designers}</p> */}
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Release Year</h3>
-              <p className="mt-1">{game.year_published}</p>
+              <p className="mt-1">{game.release_year}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Description</h3>
@@ -80,7 +80,7 @@ const GameDetail: React.FC = () => {
             <div>
               <h3 className="text-sm font-medium text-gray-500">Playing Time</h3>
               <p className="mt-1">
-                {game.min_playtime} - {game.max_playtime} minutes
+                {game.avg_play_time} minutes
               </p>
             </div>
           </div>
@@ -137,7 +137,7 @@ const GameDetail: React.FC = () => {
                         </p>
                       </div>
                       <div className="text-sm text-gray-600">
-                        {play.players.length} players
+                        {play.results.length} players
                       </div>
                     </div>
                   </Link>

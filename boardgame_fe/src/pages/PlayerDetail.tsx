@@ -32,7 +32,7 @@ const PlayerDetail: React.FC = () => {
         
         // Filter game plays for this player
         const playerPlays = playsData.filter(play =>
-          play.players.some(result => result.player_id === Number(id))
+          play.results.some(result => result.player_id === Number(id))
         );
         setGamePlays(playerPlays);
         
@@ -55,7 +55,7 @@ const PlayerDetail: React.FC = () => {
   // Calculate player statistics
   const totalPlays = gamePlays.length;
   const wins = gamePlays.filter(play => 
-    play.players.find(r => r.player_id === Number(id))?.rank === 1
+    play.results.find(r => r.player_id === Number(id))?.rank === 1
   ).length;
   const winRate = totalPlays > 0 ? Math.round((wins / totalPlays) * 100) : 0;
 
@@ -64,7 +64,7 @@ const PlayerDetail: React.FC = () => {
     const gamePlaysCount = gamePlays.filter(play => play.game_id === game.game_id).length;
     const gameWins = gamePlays.filter(play => 
       play.game_id === game.game_id &&
-      play.players.find(r => r.player_id === Number(id))?.rank === 1
+      play.results.find(r => r.player_id === Number(id))?.rank === 1
     ).length;
     
     return {
@@ -140,9 +140,9 @@ const PlayerDetail: React.FC = () => {
                       </p>
                     </div>
                     <div className="text-sm">
-                      Rank: {play.players.find(r => r.player_id === Number(id))?.rank}
-                      {play.players.find(r => r.player_id === Number(id))?.score !== null && 
-                        ` • Score: ${play.players.find(r => r.player_id === Number(id))?.score}`}
+                      Rank: {play.results.find(r => r.player_id === Number(id))?.rank}
+                      {play.results.find(r => r.player_id === Number(id))?.score !== null && 
+                        ` • Score: ${play.results.find(r => r.player_id === Number(id))?.score}`}
                     </div>
                   </div>
                 </div>

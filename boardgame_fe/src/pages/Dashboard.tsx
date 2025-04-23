@@ -37,29 +37,48 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [games, players, gamePlays] = await Promise.all([
+        const [gamesData, playersData, gamePlaysData] = await Promise.all([
           getGames(),
           getPlayers(),
           getGamePlays()
         ]);
 
-        // Process data for dashboard stats
-        const recentPlays = gamePlays
-          .slice(0, 5)
-          .map(play => ({
-            game_play_id: play.play_id,
-            game_name: games.find(g => g.game_id === play.game_id)?.name || 'Unknown Game',
-            date: new Date(play.start_time).toLocaleDateString(),
-            winner: players.find(p => p.player_id === play.players.find(r => r.rank === 1)?.player_id)?.name || 'Unknown'
-          }));
+        // Ensure we have arrays even if API returns null/undefined
+        const games = Array.isArray(gamesData) ? gamesData : [];
+        const players = Array.isArray(playersData) ? playersData : [];
+        const gamePlays = Array.isArray(gamePlaysData) ? gamePlaysData : [];
 
-        // Calculate top players
-        const playerWins = players.map(player => ({
-          player_name: player.name,
-          wins: gamePlays.filter(play => 
-            play.players.some(r => r.player_id === player.player_id && r.rank === 1)
-          ).length
-        })).sort((a, b) => b.wins - a.wins).slice(0, 5);
+        // Process data for dashboard stats with null checks
+        const recentPlays = gamePlays
+          .filter(play => play && play.results) // Ensure play and results exist
+          .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+          .slice(0, 5)
+          .map(play => {
+            const winnerResult = play.results?.find(r => r?.rank === 1);
+            const game = games.find(g => g?.game_id === play.game_id);
+            const winner = players.find(p => p?.player_id === winnerResult?.player_id);
+
+            return {
+              game_play_id: play.play_id,
+              game_name: game?.name || 'Unknown Game',
+              date: play.start_time ? new Date(play.start_time).toLocaleDateString() : 'Unknown Date',
+              winner: winner?.name || 'Unknown Player'
+            };
+          });
+
+        // Calculate top players with null checks
+        const playerWins = players
+          .map(player => ({
+            player_name: player.name,
+            wins: gamePlays.filter(play =>
+              play?.results?.some(r =>
+                r?.player_id === player.player_id &&
+                r?.rank === 1
+              )
+            ).length
+          }))
+          .sort((a, b) => b.wins - a.wins)
+          .slice(0, 5);
 
         setStats({
           totalGames: games.length,
@@ -71,8 +90,18 @@ const Dashboard: React.FC = () => {
 
         setLoading(false);
       } catch (err) {
-        setError('Failed to load dashboard data');
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load data');
         setLoading(false);
+
+        // Set default values on error
+        setStats({
+          totalGames: 0,
+          totalPlayers: 0,
+          totalPlays: 0,
+          recentPlays: [],
+          topPlayers: []
+        });
       }
     };
 
@@ -105,7 +134,7 @@ const Dashboard: React.FC = () => {
           <div className="divide-y">
             {stats.recentPlays.map((play) => (
               <div key={play.game_play_id} className="py-3">
-                <Link 
+                <Link
                   to={`/game-plays/${play.game_play_id}`}
                   className="hover:text-blue-600"
                 >

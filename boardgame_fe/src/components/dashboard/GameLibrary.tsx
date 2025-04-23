@@ -44,9 +44,9 @@ const GameLibrary: React.FC<GameLibraryProps> = ({ games, loading, error }) => {
                       {game.min_players}{game.min_players !== game.max_players ? `-${game.max_players}` : ''} players
                     </span>
                   )}
-                  {game.min_playtime && game.max_playtime && (
+                  {game.avg_play_time && (
                     <span>
-                      {game.min_playtime}{game.min_playtime !== game.max_playtime ? `-${game.max_playtime}` : ''} min
+                      {game.avg_play_time} min
                     </span>
                   )}
                 </div>

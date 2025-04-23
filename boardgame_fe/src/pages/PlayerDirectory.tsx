@@ -23,12 +23,44 @@ const PlayerDirectory: React.FC = () => {
           getPlayers(),
           getGamePlays()
         ]);
-        setPlayers(playersData);
-        setGamePlays(playsData);
+
+        // Set default empty arrays if data is undefined
+        const players = Array.isArray(playersData) ? playersData : [];
+        const plays = Array.isArray(playsData) ? playsData : [];
+
+        setPlayers(players.map(player => ({
+          ...player,
+          no_total_wins: 0,
+          no_total_play: 0,
+          total_victory_points: 0,
+          victory_rate: 0,
+        })) || []);
+
+        setGamePlays(plays.map(play => ({
+          play_id: play.play_id,
+          game_id: play.game_id,
+          start_time: play.start_time,
+          end_time: play.end_time,
+          mode: play.mode,
+          notes: play.notes,
+          results: Array.isArray(play.results) ? play.results.map(player => ({
+            ...player,
+            play_id: play.play_id,
+            victory_points: player.score || 0,
+          })) : [],
+          duration: play.end_time && play.start_time ?
+            new Date(play.end_time).getTime() - new Date(play.start_time).getTime() : 0,
+        })) || []);
+
         setLoading(false);
       } catch (err) {
-        setError('Failed to load players');
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load data');
         setLoading(false);
+
+        // Set empty arrays on error
+        setPlayers([]);
+        setGamePlays([]);
       }
     };
 
@@ -37,10 +69,10 @@ const PlayerDirectory: React.FC = () => {
 
   const getPlayerStats = (playerId: number) => {
     const playerPlays = gamePlays.filter(play =>
-      play.players.some(r => r.player_id === playerId)
+      play.results.some(r => r.player_id === playerId)
     );
     const wins = playerPlays.filter(play =>
-      play.players.find(r => r.player_id === playerId)?.rank === 1
+      play.results.find(r => r.player_id === playerId)?.rank === 1
     ).length;
 
     return {
@@ -56,10 +88,10 @@ const PlayerDirectory: React.FC = () => {
     )
     .sort((a, b) => {
       if (sortBy === 'name') return a.name.localeCompare(b.name);
-      
+
       const statsA = getPlayerStats(a.player_id);
       const statsB = getPlayerStats(b.player_id);
-      
+
       if (sortBy === 'plays') return statsB.plays - statsA.plays;
       return statsB.wins - statsA.wins;
     });
@@ -101,7 +133,7 @@ const PlayerDirectory: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredAndSortedPlayers.map(player => {
           const stats = getPlayerStats(player.player_id);
-          
+
           return (
             <Card key={player.player_id}>
               <Link
