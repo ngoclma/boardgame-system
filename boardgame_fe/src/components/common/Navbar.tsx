@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { HomeIcon, UsersIcon, PuzzlePieceIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -11,23 +12,25 @@ const Navbar: React.FC = () => {
   return (
     <nav className="bg-blue-600 shadow-md">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16">
-          <div className="flex">
+        <div className="flex justify-between h-20">
+          <div className="flex w-full">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-white font-bold text-xl">
-                BoardGame Tracker
+              <Link to="/" className="text-white font-bold text-xl flex items-center space-x-4">
+                <SparklesIcon className="h-8 w-8" />
+                <span>For Vinh Hiển</span>
               </Link>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
+            <div className="hidden sm:flex sm:items-center sm:justify-center sm:flex-1 sm:space-x-8">
               <Link
                 to="/"
                 className={`${
                   isActive('/') 
                     ? 'bg-blue-700 text-white'
                     : 'text-blue-100 hover:bg-blue-500'
-                } px-3 py-2 rounded-md text-sm font-medium transition-colors`}
+                } px-6 py-3 rounded-md text-base font-medium transition-colors flex items-center space-x-2`}
               >
-                Dashboard
+                <HomeIcon className="h-5 w-5" />
+                <span>Dashboard</span>
               </Link>
               <Link
                 to="/players"
@@ -35,9 +38,10 @@ const Navbar: React.FC = () => {
                   isActive('/players') 
                     ? 'bg-blue-700 text-white'
                     : 'text-blue-100 hover:bg-blue-500'
-                } px-3 py-2 rounded-md text-sm font-medium transition-colors`}
+                } px-6 py-3 rounded-md text-base font-medium transition-colors flex items-center space-x-2`}
               >
-                Players
+                <UsersIcon className="h-5 w-5" />
+                <span>Players</span>
               </Link>
               <Link
                 to="/games"
@@ -45,9 +49,10 @@ const Navbar: React.FC = () => {
                   isActive('/games') 
                     ? 'bg-blue-700 text-white'
                     : 'text-blue-100 hover:bg-blue-500'
-                } px-3 py-2 rounded-md text-sm font-medium transition-colors`}
+                } px-6 py-3 rounded-md text-base font-medium transition-colors flex items-center space-x-2`}
               >
-                Games
+                <PuzzlePieceIcon className="h-5 w-5" />
+                <span>Games</span>
               </Link>
             </div>
           </div>
@@ -63,9 +68,10 @@ const Navbar: React.FC = () => {
               isActive('/') 
                 ? 'bg-blue-700 text-white'
                 : 'text-blue-100 hover:bg-blue-500'
-            } block px-3 py-2 rounded-md text-base font-medium`}
+            } px-4 py-3 rounded-md text-base font-medium flex items-center space-x-2`}
           >
-            Dashboard
+            <HomeIcon className="h-5 w-5" />
+            <span>Dashboard</span>
           </Link>
           <Link
             to="/players"
@@ -73,9 +79,10 @@ const Navbar: React.FC = () => {
               isActive('/players') 
                 ? 'bg-blue-700 text-white'
                 : 'text-blue-100 hover:bg-blue-500'
-            } block px-3 py-2 rounded-md text-base font-medium`}
+            } px-4 py-3 rounded-md text-base font-medium flex items-center space-x-2`}
           >
-            Players
+            <UsersIcon className="h-5 w-5" />
+            <span>Players</span>
           </Link>
           <Link
             to="/games"
@@ -83,9 +90,10 @@ const Navbar: React.FC = () => {
               isActive('/games')
                 ? 'bg-blue-700 text-white'
                 : 'text-blue-100 hover:bg-blue-500'
-            } block px-3 py-2 rounded-md text-base font-medium`}
+            } px-4 py-3 rounded-md text-base font-medium flex items-center space-x-2`}
           >
-            Games
+            <PuzzlePieceIcon className="h-5 w-5" />
+            <span>Games</span>
           </Link>
         </div>
       </div>
