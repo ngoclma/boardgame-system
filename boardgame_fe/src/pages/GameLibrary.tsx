@@ -14,7 +14,6 @@ const GameLibrary: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "release_year">("name");
   const [importing, setImporting] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -35,7 +34,6 @@ const GameLibrary: React.FC = () => {
   const handleBGGImport = async () => {
     try {
       setImporting(true);
-      setImportError(null);
 
       const result = await importBGGCollection("HarryTr");
 
@@ -47,7 +45,6 @@ const GameLibrary: React.FC = () => {
       alert(`Successfully imported ${result.addedGames.length} games from BGG`);
     } catch (err) {
       console.error("BGG import error:", err);
-      setImportError("Failed to import games from BoardGameGeek");
     } finally {
       setImporting(false);
     }
