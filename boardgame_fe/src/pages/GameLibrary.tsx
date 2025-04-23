@@ -74,7 +74,7 @@ const GameLibrary: React.FC = () => {
           disabled={importing}
           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {importing ? "Importing..." : "Retrieve from BoardGameGeek"}
+          {importing ? "Importing..." : "Retrieve from BGG"}
         </button>
       </div>
 
@@ -92,7 +92,6 @@ const GameLibrary: React.FC = () => {
           className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="name">Sort by Name</option>
-          <option value="publisher">Sort by Publisher</option>
           <option value="release_year">Sort by Year</option>
         </select>
       </div>
@@ -126,8 +125,7 @@ const GameLibrary: React.FC = () => {
                 <p className="text-gray-600 mb-2">{game.publisher}</p>
                 <p className="text-sm text-gray-500">{game.release_year}</p>
                 <div className="mt-4 text-sm text-gray-600">
-                  {game.min_players}-{game.max_players} players •
-                  {game.avg_play_time} min
+                  {game.min_players}-{game.max_players} players • {game.avg_play_time} min
                 </div>
                 <p className="mt-2 text-sm text-gray-600 line-clamp-2">
                   {game.description}

@@ -84,7 +84,7 @@ const GamePlayLog: React.FC = () => {
               name="gameId"
               value={filters.gameId}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
             >
               <option value="">All Games</option>
               {games.map(game => (
@@ -100,7 +100,7 @@ const GamePlayLog: React.FC = () => {
               name="playerId"
               value={filters.playerId}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
             >
               <option value="">All Players</option>
               {players.map(player => (
@@ -117,7 +117,7 @@ const GamePlayLog: React.FC = () => {
               name="dateFrom"
               value={filters.dateFrom}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
             />
           </div>
           <div>
@@ -127,7 +127,7 @@ const GamePlayLog: React.FC = () => {
               name="dateTo"
               value={filters.dateTo}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
             />
           </div>
         </div>

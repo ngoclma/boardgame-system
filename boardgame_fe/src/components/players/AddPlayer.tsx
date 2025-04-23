@@ -60,7 +60,7 @@ const AddPlayer: React.FC = () => {
 
             <div>
               <label htmlFor="alias" className="block text-sm font-medium text-gray-700">
-                Email
+                Alias
               </label>
               <input
                 type="text"

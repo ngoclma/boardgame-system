@@ -6,6 +6,7 @@ import ErrorMessage from '../components/common/ErrorMessage';
 import { getGamePlays } from '../api/gamePlayApi';
 import { getPlayers } from '../api/playerApi';
 import { getGames } from '../api/gameApi';
+import { PlusIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
 interface DashboardStats {
   totalGames: number;
@@ -115,6 +116,24 @@ const Dashboard: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
 
+      {/* Quick Actions */}
+      <div className="mt-8 flex gap-4 mb-8">
+        <Link
+          to="/game-plays/add"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
+        >
+          <PlusIcon className="h-5 w-5" />
+          <span>Add New Record</span>
+        </Link>
+        <Link
+          to="/games"
+          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors inline-flex items-center space-x-2"
+        >
+          <BookOpenIcon className="h-5 w-5" />
+          <span>View Library</span>
+        </Link>
+      </div>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card title="Total Games">
@@ -159,22 +178,6 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-8 flex gap-4">
-        <Link
-          to="/game-plays/add"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Record New Game Play
-        </Link>
-        <Link
-          to="/games"
-          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-        >
-          View All Games
-        </Link>
       </div>
     </div>
   );
