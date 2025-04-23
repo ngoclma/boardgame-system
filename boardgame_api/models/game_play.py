@@ -25,5 +25,6 @@ class GamePlay(db.Model):
             'duration': self.duration,
             'mode': self.mode,
             'notes': self.notes,
+            'results': [result.to_dict() for result in self.results] if self.results else [],
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

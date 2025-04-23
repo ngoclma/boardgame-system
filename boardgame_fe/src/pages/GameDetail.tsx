@@ -24,13 +24,17 @@ const GameDetail: React.FC = () => {
           getGamePlays()
         ]);
 
-        setGame(gameData);
-        // Filter game plays for this specific game
-        setGamePlays(gamePlayData.filter(play => play.game_id === Number(id)));
+        setGame(gameData || null);
+        // Filter game plays for this specific game with null check
+        const plays = Array.isArray(gamePlayData) ? gamePlayData : [];
+        setGamePlays(plays.filter(play => play?.game_id === Number(id)));
         setLoading(false);
       } catch (err) {
+        console.error('Error fetching game data:', err);
         setError('Failed to load game details');
         setLoading(false);
+        setGame(null);
+        setGamePlays([]);
       }
     };
 
@@ -91,19 +95,20 @@ const GameDetail: React.FC = () => {
             <div>
               <h3 className="text-sm font-medium text-gray-500">Total Plays</h3>
               <p className="text-2xl font-bold text-blue-600">
-                {gamePlays.length}
+                {gamePlays?.length || 0}
               </p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Average Play Time</h3>
               <p className="text-2xl font-bold text-green-600">
-                {gamePlays.length > 0
+                {gamePlays?.length > 0
                   ? Math.round(
-                      gamePlays.reduce((acc, play) => {
-                        const duration = new Date(play.end_time).getTime() - new Date(play.start_time).getTime();
-                        return acc + duration / (1000 * 60);
-                      }, 0) / gamePlays.length
-                    )
+                    gamePlays.reduce((acc, play) => {
+                      if (!play?.start_time || !play?.end_time) return acc;
+                      const duration = new Date(play.end_time).getTime() - new Date(play.start_time).getTime();
+                      return acc + duration / (1000 * 60);
+                    }, 0) / gamePlays.length
+                  )
                   : 0}{' '}
                 minutes
               </p>
@@ -115,14 +120,17 @@ const GameDetail: React.FC = () => {
       {/* Recent Plays */}
       <Card title="Recent Plays">
         <div className="divide-y">
-          {gamePlays.length === 0 ? (
+          {!gamePlays?.length ? (
             <p className="py-4 text-gray-500">No plays recorded yet</p>
           ) : (
             gamePlays
-              .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+              .sort((a, b) =>
+                new Date(b?.start_time || 0).getTime() -
+                new Date(a?.start_time || 0).getTime()
+              )
               .slice(0, 5)
               .map((play) => (
-                <div key={play.play_id} className="py-4">
+                <div key={play?.play_id} className="py-4">
                   <Link
                     to={`/game-plays/${play.play_id}`}
                     className="block hover:bg-gray-50 transition-colors"
@@ -130,14 +138,16 @@ const GameDetail: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="font-medium">
-                          {new Date(play.start_time).toLocaleDateString()}
+                          {play?.start_time ?
+                            new Date(play.start_time).toLocaleDateString() :
+                            'Unknown Date'}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {play.mode ? `Mode: ${play.mode}` : 'Standard Game'}
+                          {play?.mode ? `Mode: ${play.mode}` : 'Standard Game'}
                         </p>
                       </div>
                       <div className="text-sm text-gray-600">
-                        {play.results.length} players
+                        {play?.results?.length || 0} players
                       </div>
                     </div>
                   </Link>

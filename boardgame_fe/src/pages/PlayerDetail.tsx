@@ -27,19 +27,30 @@ const PlayerDetail: React.FC = () => {
           getGames()
         ]);
 
-        setPlayer(playerData);
-        setGames(gamesData);
-        
-        // Filter game plays for this player
-        const playerPlays = playsData.filter(play =>
-          play.results.some(result => result.player_id === Number(id))
+        // Add null checks and default values
+        setPlayer(playerData || null);
+        setGames(Array.isArray(gamesData) ? gamesData : []);
+
+        // Filter game plays for this player with null checks
+        const plays = Array.isArray(playsData) ? playsData : [];
+        const playerPlays = plays.filter(play =>
+          play && Array.isArray(play.results) &&
+          play.results.some(result =>
+            result && result.player_id === Number(id)
+          )
         );
         setGamePlays(playerPlays);
-        
+
         setLoading(false);
       } catch (err) {
-        setError('Failed to load player data');
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load data');
         setLoading(false);
+
+        // Set default values on error
+        setPlayer(null);
+        setGames([]);
+        setGamePlays([]);
       }
     };
 
@@ -53,20 +64,28 @@ const PlayerDetail: React.FC = () => {
   if (!player) return <ErrorMessage message="Player not found" />;
 
   // Calculate player statistics
-  const totalPlays = gamePlays.length;
-  const wins = gamePlays.filter(play => 
-    play.results.find(r => r.player_id === Number(id))?.rank === 1
-  ).length;
+  const totalPlays = gamePlays?.length || 0;
+  const wins = gamePlays?.filter(play =>
+    play.results?.find(r =>
+      r?.player_id === Number(id) &&
+      r?.rank === 1
+    )
+  )?.length || 0;
   const winRate = totalPlays > 0 ? Math.round((wins / totalPlays) * 100) : 0;
 
   // Group plays by game
   const playsByGame = games.map(game => {
-    const gamePlaysCount = gamePlays.filter(play => play.game_id === game.game_id).length;
-    const gameWins = gamePlays.filter(play => 
-      play.game_id === game.game_id &&
-      play.results.find(r => r.player_id === Number(id))?.rank === 1
-    ).length;
-    
+    const gamePlaysCount = gamePlays?.filter(play =>
+      play?.game_id === game?.game_id
+    )?.length || 0;
+    const gameWins = gamePlays?.filter(play =>
+      play?.game_id === game?.game_id &&
+      play.results?.find(r =>
+        r?.player_id === Number(id) &&
+        r?.rank === 1
+      )
+    )?.length || 0;
+
     return {
       game,
       plays: gamePlaysCount,
@@ -141,7 +160,7 @@ const PlayerDetail: React.FC = () => {
                     </div>
                     <div className="text-sm">
                       Rank: {play.results.find(r => r.player_id === Number(id))?.rank}
-                      {play.results.find(r => r.player_id === Number(id))?.score !== null && 
+                      {play.results.find(r => r.player_id === Number(id))?.score !== null &&
                         ` • Score: ${play.results.find(r => r.player_id === Number(id))?.score}`}
                     </div>
                   </div>

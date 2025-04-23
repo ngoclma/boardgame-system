@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
+import AddPlayer from './components/players/AddPlayer';
+import GamePlayDetail from './components/gamePlays/GamePlayDetail';
 import Dashboard from './pages/Dashboard';
 import GameLibrary from './pages/GameLibrary';
 import GameDetail from './pages/GameDetail';
@@ -26,6 +28,8 @@ function App() {
             <Route path="/players/:id" element={<PlayerDetail />} />
             <Route path="/game-plays" element={<GamePlayLog />} />
             <Route path="/game-plays/add" element={<AddGamePlay />} />
+            <Route path="/players/add" element={<AddPlayer />} />
+            <Route path="/game-plays/:id" element={<GamePlayDetail />} />
           </Routes>
         </main>
       </div>
