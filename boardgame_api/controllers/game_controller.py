@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from extensions import db
 from models.game import Game
 from services.game_service import fetch_game_from_bgg, get_all_games, get_game_by_id
+from services.bgg_service import import_bgg_collection
 
 game_bp = Blueprint('game_bp', __name__)
 
@@ -77,3 +78,21 @@ def delete_game(game_id):
     db.session.commit()
     
     return jsonify({'message': 'Game deleted successfully'})
+
+@game_bp.route('/import-bgg', methods=['POST'])
+def import_bgg_games():
+    try:
+        username = request.json.get('username')
+        if not username:
+            return jsonify({'error': 'BGG username is required'}), 400
+            
+        added_games, errors = import_bgg_collection(username)
+
+        print(added_games)
+        
+        return jsonify({
+            'addedGames': [game.to_dict() for game in added_games],
+            'errors': errors
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

@@ -5,13 +5,16 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getGames } from '../api/gameApi';
 import { Game } from '../models/Game';
+import { importBGGCollection } from '../api/importBgg';
 
 const GameLibrary: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'name' | 'publisher' | 'release_year'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'release_year'>('name');
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -29,14 +32,33 @@ const GameLibrary: React.FC = () => {
     fetchGames();
   }, []);
 
+  const handleBGGImport = async () => {
+    try {
+      setImporting(true);
+      setImportError(null);
+      
+      const result = await importBGGCollection('HarryTr');
+      
+      // Refresh games list with newly added games
+      const updatedGames = await getGames();
+      setGames(updatedGames);
+      
+      // Show success message
+      alert(`Successfully imported ${result.addedGames.length} games from BGG`);
+    } catch (err) {
+      console.error('BGG import error:', err);
+      setImportError('Failed to import games from BoardGameGeek');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const filteredAndSortedGames = games
     .filter(game =>
       game.name.toLowerCase().includes(searchTerm.toLowerCase())
-      // game.publisher.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       if (sortBy === 'name') return a.name.localeCompare(b.name);
-      // if (sortBy === 'publisher') return a.publisher?.localeCompare(b.publisher);
       return b.release_year - a.release_year;
     });
 
@@ -47,12 +69,13 @@ const GameLibrary: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold">Game Library</h1>
-        <Link
-          to="/games/add"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        <button
+          onClick={handleBGGImport}
+          disabled={importing}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add New Game
-        </Link>
+          {importing ? 'Importing...' : 'Retrieve from BoardGameGeek'}
+        </button>
       </div>
 
       <div className="mb-6 flex gap-4">
@@ -65,7 +88,7 @@ const GameLibrary: React.FC = () => {
         />
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as 'name' | 'publisher' | 'release_year')}
+          onChange={(e) => setSortBy(e.target.value as 'name' | 'release_year')}
           className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="name">Sort by Name</option>
