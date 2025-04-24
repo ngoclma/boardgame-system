@@ -33,7 +33,7 @@ class Game(db.Model):
             'avg_play_time': self.avg_play_time,
             'bgg_id': self.bgg_id,
             'publisher': self.publisher,
-            'complexity': str(self.complexity) if self.complexity else None,
+            'complexity': self.complexity,
             'comment': self.comment,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

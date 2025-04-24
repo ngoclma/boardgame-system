@@ -7,6 +7,10 @@ import { getGamePlays } from '../api/gamePlayApi';
 import { getPlayers } from '../api/playerApi';
 import { getGames } from '../api/gameApi';
 import { PlusIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { calculateOverallPlayerStats, getGradeLabel, getGradeColor } from '../utils/gradeCalculator';
+import { Game } from '../models/Game';
+import { Player } from '../models/Player';
+import { Play } from '../models/Play';
 
 interface DashboardStats {
   totalGames: number;
@@ -34,6 +38,9 @@ const Dashboard: React.FC = () => {
     recentPlays: [],
     topPlayers: []
   });
+  const [games, setGames] = useState<Game[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [gamePlays, setGamePlays] = useState<Play[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -45,19 +52,23 @@ const Dashboard: React.FC = () => {
         ]);
 
         // Ensure we have arrays even if API returns null/undefined
-        const games = Array.isArray(gamesData) ? gamesData : [];
-        const players = Array.isArray(playersData) ? playersData : [];
-        const gamePlays = Array.isArray(gamePlaysData) ? gamePlaysData : [];
+        const gamesArray = Array.isArray(gamesData) ? gamesData : [];
+        const playersArray = Array.isArray(playersData) ? playersData : [];
+        const gamePlaysArray = Array.isArray(gamePlaysData) ? gamePlaysData : [];
+
+        setGames(gamesArray);
+        setPlayers(playersArray);
+        setGamePlays(gamePlaysArray);
 
         // Process data for dashboard stats with null checks
-        const recentPlays = gamePlays
+        const recentPlays = gamePlaysArray
           .filter(play => play && play.results) // Ensure play and results exist
           .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
           .slice(0, 5)
           .map(play => {
             const winnerResult = play.results?.find(r => r?.rank === 1);
-            const game = games.find(g => g?.game_id === play.game_id);
-            const winner = players.find(p => p?.player_id === winnerResult?.player_id);
+            const game = gamesArray.find(g => g?.game_id === play.game_id);
+            const winner = playersArray.find(p => p?.player_id === winnerResult?.player_id);
 
             return {
               game_play_id: play.play_id,
@@ -68,10 +79,10 @@ const Dashboard: React.FC = () => {
           });
 
         // Calculate top players with null checks
-        const playerWins = players
+        const playerWins = playersArray
           .map(player => ({
             player_name: player.name,
-            wins: gamePlays.filter(play =>
+            wins: gamePlaysArray.filter(play =>
               play?.results?.some(r =>
                 r?.player_id === player.player_id &&
                 r?.rank === 1
@@ -82,9 +93,9 @@ const Dashboard: React.FC = () => {
           .slice(0, 5);
 
         setStats({
-          totalGames: games.length,
-          totalPlayers: players.length,
-          totalPlays: gamePlays.length,
+          totalGames: gamesArray.length,
+          totalPlayers: playersArray.length,
+          totalPlays: gamePlaysArray.length,
           recentPlays,
           topPlayers: playerWins
         });
@@ -147,6 +158,30 @@ const Dashboard: React.FC = () => {
         </Card>
       </div>
 
+      {/* Overall Player Rankings */}
+      <div className="mt-8 mb-8">
+        <Card title="Overall Player Rankings">
+          <div className="divide-y">
+            {calculateOverallPlayerStats(games, gamePlays, players).map((stat, index) => (
+              <div key={stat.player_id} className="py-4 flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span className="text-lg font-medium w-8">{index + 1}</span>
+                  <Link to={`/players/${stat.player_id}`} className="hover:text-blue-600">
+                    {stat.player_name}
+                  </Link>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-600">{stat.total_plays} plays</span>
+                  <span className={`font-bold ${getGradeColor(stat.grade_point)}`}>
+                    {stat.grade_point.toFixed(2)} ({getGradeLabel(Number(stat.grade_point.toFixed(2)))})
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recent Plays */}
         <Card title="Recent Game Plays">
@@ -167,8 +202,8 @@ const Dashboard: React.FC = () => {
           </div>
         </Card>
 
-        {/* Top Players */}
-        <Card title="Top Players">
+        {/* Number of Wins Rankings */}
+        <Card title="Number of Wins Rankings">
           <div className="divide-y">
             {stats.topPlayers.map((player, index) => (
               <div key={index} className="py-3 flex justify-between items-center">

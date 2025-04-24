@@ -7,6 +7,13 @@ import { getGame } from "../api/gameApi";
 import { getGamePlays } from "../api/gamePlayApi";
 import { Game } from "../models/Game";
 import { Play } from "../models/Play";
+import { Player } from "../models/Player";
+import { getPlayers } from "../api/playerApi";
+import {
+  calculateGamePlayerStats,
+  getGradeLabel,
+  getGradeColor,
+} from "../utils/gradeCalculator";
 
 const GameDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,20 +21,23 @@ const GameDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [gamePlays, setGamePlays] = useState<Play[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
     const fetchGameData = async () => {
       try {
         setLoading(true);
-        const [gameData, gamePlayData] = await Promise.all([
+        const [gameData, gamePlayData, playerData] = await Promise.all([
           getGame(Number(id)),
           getGamePlays(),
+          getPlayers(),
         ]);
 
         setGame(gameData || null);
         // Filter game plays for this specific game with null check
         const plays = Array.isArray(gamePlayData) ? gamePlayData : [];
         setGamePlays(plays.filter((play) => play?.game_id === Number(id)));
+        setPlayers(playerData || []);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching game data:", err);
@@ -176,6 +186,42 @@ const GameDetail: React.FC = () => {
         </Card>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
+      {/* Ranking */}
+      <Card title="Player Rankings">
+        <div className="divide-y">
+          {calculateGamePlayerStats(gamePlays, players).map((stat, index) => (
+            <div
+              key={stat.player_id}
+              className="py-4 flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-4">
+                <span className="text-lg font-medium w-8">{index + 1}</span>
+                <Link
+                  to={`/players/${stat.player_id}`}
+                  className="hover:text-blue-600"
+                >
+                  {stat.player_name}
+                </Link>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  {stat.total_plays} plays
+                </span>
+                <span
+                  className={`font-bold ${getGradeColor(
+                    stat.grade_point
+                  )}`}
+                >
+                  {stat.grade_point.toFixed(2)} (
+                  {getGradeLabel(stat.grade_point)})
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* Recent Plays */}
       <Card title="Recent Plays">
         <div className="divide-y">
@@ -216,6 +262,7 @@ const GameDetail: React.FC = () => {
           )}
         </div>
       </Card>
+      </div>
     </div>
   );
 };
