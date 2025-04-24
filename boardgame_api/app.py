@@ -1,7 +1,10 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from extensions import db, migrate
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 # def create_app():
 app = Flask(__name__)
@@ -14,8 +17,9 @@ cors = CORS(app, resources={
 })
 
 # Load configuration
-if os.environ.get('FLASK_ENV') == 'production':
+if os.getenv('FLASK_ENV') == 'production':
     app.config.from_object('config.ProductionConfig')
+    print("Production config loaded")
 else:
     app.config.from_object('config.DevelopmentConfig')
 

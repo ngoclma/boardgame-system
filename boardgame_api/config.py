@@ -10,19 +10,19 @@ class Config:
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
+    SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL', 'postgresql://postgres:password@localhost:5432/boardgame'
     )
 
 class TestingConfig(Config):
     """Testing configuration."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
+    SQLALCHEMY_DATABASE_URI = os.getenv(
         'TEST_DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/boardgame_test_db'
     )
 
 class ProductionConfig(Config):
     """Production configuration."""
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    if SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://', 1)
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    # if SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
+    #     SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://', 1)

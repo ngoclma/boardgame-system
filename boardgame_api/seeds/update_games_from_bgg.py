@@ -2,7 +2,8 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import create_app
+# from app import create_app
+from app import app
 from extensions import db
 from models.game import Game
 from services.game_service import fetch_game_from_bgg
@@ -10,7 +11,7 @@ import time
 
 def update_games_from_bgg():
     """Update existing games with data from BoardGameGeek"""
-    app = create_app()
+    # app = create_app()
     
     with app.app_context():
         # Get all games that have a BGG ID
