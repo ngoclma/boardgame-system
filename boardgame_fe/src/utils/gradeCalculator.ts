@@ -26,7 +26,7 @@ export const getRankGradePoint = (rank: number): number => {
 };
 
 export const getGradeLabel = (gradePoint: number): string => {
-  if (gradePoint == 5.0) return "A+";
+  if (gradePoint === 5.0) return "A+";
   if (gradePoint >= 4.5) return "A";
   if (gradePoint >= 4.0) return "A-";
   if (gradePoint >= 3.5) return "B+";

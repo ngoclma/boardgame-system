@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { HomeIcon, UsersIcon, PuzzlePieceIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, UsersIcon, PuzzlePieceIcon } from '@heroicons/react/24/outline';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
