@@ -43,6 +43,16 @@ const GameDetail: React.FC = () => {
     }
   }, [id]);
 
+  const getComplexityColor = (complexity: number): string => {
+    if (!complexity && complexity !== 0) return "text-gray-500";
+
+    if (complexity <= 1) return "text-emerald-500";
+    if (complexity <= 2) return "text-green-500";
+    if (complexity <= 3) return "text-yellow-500";
+    if (complexity <= 4) return "text-orange-500";
+    return "text-red-500";
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!game) return <ErrorMessage message="Game not found" />;
@@ -96,10 +106,6 @@ const GameDetail: React.FC = () => {
         <Card title="Game Information">
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Designers</h3>
-              {/* <p className="mt-1">{game.designers}</p> */}
-            </div>
-            <div>
               <h3 className="text-sm font-medium text-gray-500">
                 Release Year
               </h3>
@@ -152,6 +158,19 @@ const GameDetail: React.FC = () => {
                   : 0}{" "}
                 minutes
               </p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Complexity</h3>
+              <div className="flex items-baseline space-x-2">
+                <p
+                  className={`text-2xl font-bold ${getComplexityColor(
+                    game.complexity
+                  )}`}
+                >
+                  {game.complexity || "N/A"}
+                </p>
+                <span className="text-sm text-gray-500">/ 5.0</span>
+              </div>
             </div>
           </div>
         </Card>

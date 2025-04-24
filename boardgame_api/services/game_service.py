@@ -35,6 +35,7 @@ def fetch_game_from_bgg(bgg_id):
         playing_time = item.find('.//playingtime')
         image = item.find('.//image')
         release_year = item.find('.//yearpublished')
+        averageweight = item.find('.//averageweight')
         
         return {
             'name': name.get('value') if name is not None else '',
@@ -44,7 +45,8 @@ def fetch_game_from_bgg(bgg_id):
             'avg_play_time': int(playing_time.get('value')) if playing_time is not None else None,
             'image_url': image.text if image is not None else '',
             'bgg_id': bgg_id,
-            'release_year': int(release_year.get('value')) if release_year is not None else None
+            'release_year': int(release_year.get('value')) if release_year is not None else None,
+            'averageweight': float(averageweight.get('value')) if averageweight is not None else None
         }
     except Exception as e:
         print(f"Error fetching data from BGG: {e}")

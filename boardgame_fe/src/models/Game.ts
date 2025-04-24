@@ -10,5 +10,6 @@ export interface Game {
     image_url?: string;
     bgg_id?: number;
     comments?: string;
+    complexity: number;
     created_at?: string;
 }

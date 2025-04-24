@@ -15,6 +15,7 @@ class Game(db.Model):
     bgg_id = db.Column(db.Integer)
     publisher = db.Column(db.String(255))
     comment = db.Column(db.Text)
+    complexity = db.Column(db.Numeric(5, 2))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -32,6 +33,7 @@ class Game(db.Model):
             'avg_play_time': self.avg_play_time,
             'bgg_id': self.bgg_id,
             'publisher': self.publisher,
+            'complexity': str(self.complexity) if self.complexity else None,
             'comment': self.comment,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

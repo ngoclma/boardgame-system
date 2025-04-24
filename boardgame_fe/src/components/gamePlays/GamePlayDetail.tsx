@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import Card from '../common/Card';
-import LoadingSpinner from '../common/LoadingSpinner';
-import ErrorMessage from '../common/ErrorMessage';
-import { getGamePlay } from '../../api/gamePlayApi';
-import { getGame } from '../../api/gameApi';
-import { Play } from '../../models/Play';
-import { Game } from '../../models/Game';
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import Card from "../common/Card";
+import LoadingSpinner from "../common/LoadingSpinner";
+import ErrorMessage from "../common/ErrorMessage";
+import { getGamePlay } from "../../api/gamePlayApi";
+import { getGame } from "../../api/gameApi";
+import { getPlayer } from "../../api/playerApi";
+import { Player } from "../../models/Player";
+import { Play } from "../../models/Play";
+import { Game } from "../../models/Game";
 
 const GamePlayDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,22 +16,39 @@ const GamePlayDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [gamePlay, setGamePlay] = useState<Play | null>(null);
   const [game, setGame] = useState<Game | null>(null);
+  const [players, setPlayers] = useState<Record<number, Player>>({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const playData = await getGamePlay(Number(id));
         setGamePlay(playData);
-        
+
         if (playData?.game_id) {
           const gameData = await getGame(playData.game_id);
           setGame(gameData);
         }
-        
+
+        if (playData?.results) {
+          const playerPromises = playData.results.map((result) =>
+            getPlayer(result.player_id)
+          );
+          const playerData = await Promise.all(playerPromises);
+          const playerMap = playerData.reduce((acc, player) => {
+            if (player) {
+              acc[player.player_id] = player;
+            }
+            return acc;
+          }, {} as Record<number, Player>);
+          setPlayers(playerMap);
+        }
+
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching game play:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load game play');
+        console.error("Error fetching game play:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load game play"
+        );
         setLoading(false);
       }
     };
@@ -46,10 +65,7 @@ const GamePlayDetail: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link
-          to="/game-plays"
-          className="text-blue-600 hover:text-blue-800"
-        >
+        <Link to="/game-plays" className="text-blue-600 hover:text-blue-800">
           ← Back to Game Plays
         </Link>
       </div>
@@ -60,19 +76,23 @@ const GamePlayDetail: React.FC = () => {
             <div>
               <h3 className="text-sm font-medium text-gray-500">Game</h3>
               <p className="mt-1 text-lg font-medium">
-                {game?.name || 'Unknown Game'}
+                {game?.name || "Unknown Game"}
               </p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Date Played</h3>
               <p className="mt-1">
-                {gamePlay.start_time ? new Date(gamePlay.start_time).toLocaleDateString() : 'Unknown'}
+                {gamePlay.start_time
+                  ? new Date(gamePlay.start_time).toLocaleDateString()
+                  : "Unknown"}
               </p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Duration</h3>
               <p className="mt-1">
-                {gamePlay.duration ? `${gamePlay.duration} minutes` : 'Not recorded'}
+                {gamePlay.duration
+                  ? `${gamePlay.duration} minutes`
+                  : "Not recorded"}
               </p>
             </div>
             {gamePlay.mode && (
@@ -101,7 +121,7 @@ const GamePlayDetail: React.FC = () => {
                       to={`/players/${result.player_id}`}
                       className="font-medium hover:text-blue-600"
                     >
-                      {result.player?.name || `Player ${result.player_id}`}
+                      {players[result.player_id]?.name || "Unknown Player"}
                     </Link>
                     <span className="text-sm text-gray-600">
                       Rank: {result.rank}
@@ -113,9 +133,7 @@ const GamePlayDetail: React.FC = () => {
                     </p>
                   )}
                   {result.notes && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      {result.notes}
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">{result.notes}</p>
                   )}
                 </div>
               ))}

@@ -15,8 +15,8 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between h-20">
           <div className="flex w-full">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-white font-bold text-xl flex items-center space-x-4">
-                <SparklesIcon className="h-8 w-8" />
+              <Link to="/" className="text-white font-bold text-3xl flex items-center space-x-2">
+                <img src="/fvh_logo.png" alt="Logo" className="h-12 w-12" />
                 <span>For Vinh Hiển</span>
               </Link>
             </div>

@@ -1,3 +1,7 @@
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app import create_app
 from extensions import db
 from models.game import Game
@@ -25,11 +29,12 @@ def update_games_from_bgg():
                 
                 if bgg_data:
                     # Update game attributes
-                    game.description = bgg_data['description'] or game.description
-                    game.min_players = bgg_data['min_players'] or game.min_players
-                    game.max_players = bgg_data['max_players'] or game.max_players
-                    game.avg_play_time = bgg_data['avg_play_time'] or game.avg_play_time
-                    game.image_url = bgg_data['image_url'] or game.image_url
+                    # game.description = bgg_data['description'] or game.description
+                    # game.min_players = bgg_data['min_players'] or game.min_players
+                    # game.max_players = bgg_data['max_players'] or game.max_players
+                    # game.avg_play_time = bgg_data['avg_play_time'] or game.avg_play_time
+                    # game.image_url = bgg_data['image_url'] or game.image_url
+                    game.complexity = bgg_data['averageweight'] or game.averageweight
                     
                     db.session.add(game)
                     updated_count += 1
