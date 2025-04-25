@@ -12,7 +12,7 @@ const GameLibrary: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "release_year">("name");
+  const [sortBy, setSortBy] = useState<"name" | "avg_play_time">("name");
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const GameLibrary: React.FC = () => {
     )
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name);
-      return b.release_year - a.release_year;
+      return b.avg_play_time - a.avg_play_time;
     });
 
   if (loading) return <LoadingSpinner />;
@@ -85,11 +85,11 @@ const GameLibrary: React.FC = () => {
         />
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as "name" | "release_year")}
+          onChange={(e) => setSortBy(e.target.value as "name" | "avg_play_time")}
           className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="name">Sort by Name</option>
-          <option value="release_year">Sort by Year</option>
+          <option value="avg_play_time">Sort by Play Time</option>
         </select>
       </div>
 

@@ -6,7 +6,7 @@ import ErrorMessage from '../components/common/ErrorMessage';
 import { getGamePlays } from '../api/gamePlayApi';
 import { getPlayers } from '../api/playerApi';
 import { getGames } from '../api/gameApi';
-import { PlusIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { calculateOverallPlayerStats, getGradeLabel, getGradeColor } from '../utils/gradeCalculator';
 import { Game } from '../models/Game';
 import { Player } from '../models/Player';
@@ -137,11 +137,11 @@ const Dashboard: React.FC = () => {
           <span>Add New Record</span>
         </Link>
         <Link
-          to="/games"
+          to="/game-plays"
           className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors inline-flex items-center space-x-2"
         >
-          <BookOpenIcon className="h-5 w-5" />
-          <span>View Library</span>
+          <DocumentTextIcon className="h-5 w-5" />
+          <span>View Game Log</span>
         </Link>
       </div>
 

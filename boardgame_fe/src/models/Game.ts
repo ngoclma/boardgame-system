@@ -6,7 +6,7 @@ export interface Game {
     publisher?: string;
     min_players?: number;
     max_players?: number;
-    avg_play_time?: number;
+    avg_play_time: number;
     image_url?: string;
     bgg_id?: number;
     comments?: string;

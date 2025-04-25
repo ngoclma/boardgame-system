@@ -14,6 +14,7 @@ import {
   getGradeLabel,
   getGradeColor,
 } from "../utils/gradeCalculator";
+import { PlusIcon } from "@heroicons/react/24/outline";
 
 const GameDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -104,10 +105,11 @@ const GameDetail: React.FC = () => {
       {/* Action Button */}
       <div className="mb-6 flex justify-end">
         <Link
-          to={`/game-plays/add?game=${game.game_id}`}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-colors"
+          to="/game-plays/add"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
         >
-          Record New Play
+          <PlusIcon className="h-5 w-5" />
+          <span>Add New Record</span>
         </Link>
       </div>
 
@@ -187,81 +189,81 @@ const GameDetail: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
-      {/* Ranking */}
-      <Card title="Player Rankings">
-        <div className="divide-y">
-          {calculateGamePlayerStats(gamePlays, players).map((stat, index) => (
-            <div
-              key={stat.player_id}
-              className="py-4 flex items-center justify-between"
-            >
-              <div className="flex items-center space-x-4">
-                <span className="text-lg font-medium w-8">{index + 1}</span>
-                <Link
-                  to={`/players/${stat.player_id}`}
-                  className="hover:text-blue-600"
-                >
-                  {stat.player_name}
-                </Link>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  {stat.total_plays} plays
-                </span>
-                <span
-                  className={`font-bold ${getGradeColor(
-                    stat.grade_point
-                  )}`}
-                >
-                  {stat.grade_point.toFixed(2)} (
-                  {getGradeLabel(stat.grade_point)})
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Recent Plays */}
-      <Card title="Recent Plays">
-        <div className="divide-y">
-          {!gamePlays?.length ? (
-            <p className="py-4 text-gray-500">No plays recorded yet</p>
-          ) : (
-            gamePlays
-              .sort(
-                (a, b) =>
-                  new Date(b?.start_time || 0).getTime() -
-                  new Date(a?.start_time || 0).getTime()
-              )
-              .slice(0, 5)
-              .map((play) => (
-                <div key={play?.play_id} className="py-4">
+        {/* Ranking */}
+        <Card title="Player Rankings">
+          <div className="divide-y">
+            {calculateGamePlayerStats(gamePlays, players).map((stat, index) => (
+              <div
+                key={stat.player_id}
+                className="py-4 flex items-center justify-between"
+              >
+                <div className="flex items-center space-x-4">
+                  <span className="text-lg font-medium w-8">{index + 1}</span>
                   <Link
-                    to={`/game-plays/${play.play_id}`}
-                    className="block hover:bg-gray-50 transition-colors"
+                    to={`/players/${stat.player_id}`}
+                    className="hover:text-blue-600"
                   >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">
-                          {play?.start_time
-                            ? new Date(play.start_time).toLocaleDateString()
-                            : "Unknown Date"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {play?.mode ? `Mode: ${play.mode}` : "Standard Game"}
-                        </p>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {play?.results?.length || 0} players
-                      </div>
-                    </div>
+                    {stat.player_name}
                   </Link>
                 </div>
-              ))
-          )}
-        </div>
-      </Card>
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-600">
+                    {stat.total_plays} plays
+                  </span>
+                  <span
+                    className={`font-bold ${getGradeColor(stat.grade_point)}`}
+                  >
+                    {stat.grade_point.toFixed(2)} (
+                    {getGradeLabel(stat.grade_point)})
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Recent Plays */}
+        <Card title="Recent Plays">
+          <div className="divide-y">
+            {!gamePlays?.length ? (
+              <p className="py-4 text-gray-500">No plays recorded yet</p>
+            ) : (
+              gamePlays
+                .sort(
+                  (a, b) =>
+                    new Date(b?.start_time || 0).getTime() -
+                    new Date(a?.start_time || 0).getTime()
+                )
+                .slice(0, 5)
+                .map((play) => (
+                  <div key={play?.play_id} className="py-4">
+                    <Link
+                      to={`/game-plays/${play.play_id}`}
+                      className="block hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">
+                            {play?.start_time
+                              ? new Date(play.start_time).toLocaleDateString()
+                              : "Unknown Date"}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {play?.mode
+                              ? `Mode: ${play.mode}`
+                              : "Standard Game"}
+                          </p>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {play?.results?.length || 0} players
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );

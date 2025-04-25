@@ -9,6 +9,7 @@ import { getPlayers } from '../api/playerApi';
 import { Play } from '../models/Play';
 import { Game } from '../models/Game';
 import { Player } from '../models/Player';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 const GamePlayLog: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -70,9 +71,10 @@ const GamePlayLog: React.FC = () => {
         <h1 className="text-3xl font-bold">Game Play Log</h1>
         <Link
           to="/game-plays/add"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
         >
-          Record New Play
+          <PlusIcon className="h-5 w-5" />
+          <span>Add New Record</span>
         </Link>
       </div>
 

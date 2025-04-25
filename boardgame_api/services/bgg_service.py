@@ -45,6 +45,7 @@ def import_bgg_collection(username):
                 max_players=bgg_data['max_players'],
                 avg_play_time=bgg_data['avg_play_time'],
                 image_url=bgg_data['image_url'],
+                complexity=bgg_data['averageweight'],
                 created_at=datetime.utcnow()
             )
             

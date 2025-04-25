@@ -9,7 +9,7 @@ import ErrorMessage from "../components/common/ErrorMessage";
 import { getGames } from "../api/gameApi";
 import { getPlayers } from "../api/playerApi";
 import { createGamePlay } from "../api/gamePlayApi";
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 const AddGamePlay: React.FC = () => {
   const navigate = useNavigate();
@@ -128,8 +128,8 @@ const AddGamePlay: React.FC = () => {
       await createGamePlay(payload);
       navigate("/game-plays");
     } catch (err) {
-      console.error('Error fetching data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      console.error("Error fetching data:", err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -151,15 +151,17 @@ const AddGamePlay: React.FC = () => {
               name="game_id"
               value={formData.game_id}
               onChange={handleInputChange}
-              className="px-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2"
+              className="px-2 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2"
               required
             >
               <option value="">Select a game</option>
-              {games.map((game) => (
-                <option key={game.game_id} value={game.game_id}>
-                  {game.name}
-                </option>
-              ))}
+              {[...games]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((game) => (
+                  <option key={game.game_id} value={game.game_id}>
+                    {game.name}
+                  </option>
+                ))}
             </select>
           </div>
 
@@ -173,7 +175,7 @@ const AddGamePlay: React.FC = () => {
                 name="start_time"
                 value={formData.start_time}
                 onChange={handleInputChange}
-                className="px-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2"
+                className="px-2 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2"
                 required
               />
             </div>
@@ -186,7 +188,7 @@ const AddGamePlay: React.FC = () => {
                 name="end_time"
                 value={formData.end_time}
                 onChange={handleInputChange}
-                className="px-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2"
+                className="px-2 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2"
                 required
               />
             </div>
@@ -201,7 +203,7 @@ const AddGamePlay: React.FC = () => {
               name="mode"
               value={formData.mode}
               onChange={handleInputChange}
-              className="px-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2"
+              className="p-2 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base"
             />
           </div>
 
@@ -214,7 +216,7 @@ const AddGamePlay: React.FC = () => {
               value={formData.notes}
               onChange={handleInputChange}
               rows={3}
-              className="px-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="p-2 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
 
