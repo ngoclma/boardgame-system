@@ -93,29 +93,27 @@ export const calculateGamePlayerStats = (
 export const calculateOverallPlayerStats = (
   games: Game[],
   gamePlays: Play[],
-  players: Player[]
+  players: Player[],
+  year?: number
 ): PlayerGameStats[] => {
-  console.log("Input Data:", {
-    gamesCount: games.length,
-    gamePlaysCount: gamePlays.length,
-    playersCount: players.length,
-  });
-
+  
+  const filteredGamePlays = year 
+    ? gamePlays.filter(play => new Date(play.start_time).getFullYear() === year)
+    : gamePlays;
+  
   const playerGameStats: Record<
     number,
     Record<number, { points: number; plays: number }>
   > = {};
 
   // Calculate stats for each player for each game
-  gamePlays.forEach((play) => {
-    console.log(`\nProcessing game play ID: ${play.play_id}`);
+  filteredGamePlays.forEach((play) => {
 
     const game = games.find((g) => g.game_id === play.game_id);
     if (!game) {
       console.warn(`Game not found for game_id: ${play.game_id}`);
       return;
     }
-    console.log(`Found game: ${game.name} (Complexity: ${Number(game.complexity)})`);
 
     play.results?.forEach((result) => {
       if (!result.player_id) {
@@ -135,21 +133,15 @@ export const calculateOverallPlayerStats = (
       }
 
       const gradePoint = getRankGradePoint(result.rank);
-      console.log(
-        `Player ${result.player_id} - Rank: ${result.rank} - Grade Points: ${gradePoint}`
-      );
 
       playerGameStats[result.player_id][play.game_id].points += gradePoint;
       playerGameStats[result.player_id][play.game_id].plays += 1;
     });
   });
 
-  console.log("\nIntermediate playerGameStats:", playerGameStats);
-
   // Calculate weighted average for each player
   return players
     .map((player) => {
-      console.log(`\nCalculating overall stats for player: ${player.name}`);
       let totalWeightedPoints = 0;
       let totalWeights = 0;
 
@@ -159,14 +151,7 @@ export const calculateOverallPlayerStats = (
         if (playerGameStat && playerGameStat.plays > 0) {
           const avgGamePoints = playerGameStat.points / playerGameStat.plays;
           const weightedPoints = avgGamePoints * Number(game.complexity);
-
-          console.log(`Game: ${game.name}`);
-          console.log(`- Total Points: ${playerGameStat.points}`);
-          console.log(`- Total Plays: ${playerGameStat.plays}`);
-          console.log(`- Avg Points: ${avgGamePoints.toFixed(2)}`);
-          console.log(`- Game Complexity: ${Number(game.complexity).toFixed(2)}`);
-          console.log(`- Weighted Points: ${weightedPoints.toFixed(2)}`);
-
+          
           totalWeightedPoints += weightedPoints;
           totalWeights += Number(game.complexity);
         }
@@ -174,10 +159,6 @@ export const calculateOverallPlayerStats = (
 
       const finalGradePoint =
         totalWeights > 0 ? totalWeightedPoints / totalWeights : 0;
-      console.log("Final calculation:");
-      console.log(`- Total Weighted Points: ${totalWeightedPoints}`);
-      console.log(`- Total Weights: ${totalWeights}`);
-      console.log(`- Final Grade Point: ${finalGradePoint.toFixed(2)}`);
 
       return {
         player_id: player.player_id,

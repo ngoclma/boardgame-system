@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import Card from '../components/common/Card';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorMessage from '../components/common/ErrorMessage';
-import { getGamePlays } from '../api/gamePlayApi';
-import { getPlayers } from '../api/playerApi';
-import { getGames } from '../api/gameApi';
-import { PlusIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import { calculateOverallPlayerStats, getGradeLabel, getGradeColor } from '../utils/gradeCalculator';
-import { Game } from '../models/Game';
-import { Player } from '../models/Player';
-import { Play } from '../models/Play';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import Card from "../components/common/Card";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import ErrorMessage from "../components/common/ErrorMessage";
+import { getGamePlays } from "../api/gamePlayApi";
+import { getPlayers } from "../api/playerApi";
+import { getGames } from "../api/gameApi";
+import { PlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import {
+  calculateOverallPlayerStats,
+  getGradeLabel,
+  getGradeColor,
+} from "../utils/gradeCalculator";
+import { Game } from "../models/Game";
+import { Player } from "../models/Player";
+import { Play } from "../models/Play";
 
 interface DashboardStats {
   totalGames: number;
@@ -36,11 +40,14 @@ const Dashboard: React.FC = () => {
     totalPlayers: 0,
     totalPlays: 0,
     recentPlays: [],
-    topPlayers: []
+    topPlayers: [],
   });
   const [games, setGames] = useState<Game[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [gamePlays, setGamePlays] = useState<Play[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -48,13 +55,15 @@ const Dashboard: React.FC = () => {
         const [gamesData, playersData, gamePlaysData] = await Promise.all([
           getGames(),
           getPlayers(),
-          getGamePlays()
+          getGamePlays(),
         ]);
 
         // Ensure we have arrays even if API returns null/undefined
         const gamesArray = Array.isArray(gamesData) ? gamesData : [];
         const playersArray = Array.isArray(playersData) ? playersData : [];
-        const gamePlaysArray = Array.isArray(gamePlaysData) ? gamePlaysData : [];
+        const gamePlaysArray = Array.isArray(gamePlaysData)
+          ? gamePlaysData
+          : [];
 
         setGames(gamesArray);
         setPlayers(playersArray);
@@ -62,32 +71,39 @@ const Dashboard: React.FC = () => {
 
         // Process data for dashboard stats with null checks
         const recentPlays = gamePlaysArray
-          .filter(play => play && play.results) // Ensure play and results exist
-          .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+          .filter((play) => play && play.results) // Ensure play and results exist
+          .sort(
+            (a, b) =>
+              new Date(b.start_time).getTime() -
+              new Date(a.start_time).getTime()
+          )
           .slice(0, 5)
-          .map(play => {
-            const winnerResult = play.results?.find(r => r?.rank === 1);
-            const game = gamesArray.find(g => g?.game_id === play.game_id);
-            const winner = playersArray.find(p => p?.player_id === winnerResult?.player_id);
+          .map((play) => {
+            const winnerResult = play.results?.find((r) => r?.rank === 1);
+            const game = gamesArray.find((g) => g?.game_id === play.game_id);
+            const winner = playersArray.find(
+              (p) => p?.player_id === winnerResult?.player_id
+            );
 
             return {
               game_play_id: play.play_id,
-              game_name: game?.name || 'Unknown Game',
-              date: play.start_time ? new Date(play.start_time).toLocaleDateString() : 'Unknown Date',
-              winner: winner?.name || 'Unknown Player'
+              game_name: game?.name || "Unknown Game",
+              date: play.start_time
+                ? new Date(play.start_time).toLocaleDateString()
+                : "Unknown Date",
+              winner: winner?.name || "Unknown Player",
             };
           });
 
         // Calculate top players with null checks
         const playerWins = playersArray
-          .map(player => ({
+          .map((player) => ({
             player_name: player.name,
-            wins: gamePlaysArray.filter(play =>
-              play?.results?.some(r =>
-                r?.player_id === player.player_id &&
-                r?.rank === 1
+            wins: gamePlaysArray.filter((play) =>
+              play?.results?.some(
+                (r) => r?.player_id === player.player_id && r?.rank === 1
               )
-            ).length
+            ).length,
           }))
           .sort((a, b) => b.wins - a.wins)
           .slice(0, 5);
@@ -97,13 +113,13 @@ const Dashboard: React.FC = () => {
           totalPlayers: playersArray.length,
           totalPlays: gamePlaysArray.length,
           recentPlays,
-          topPlayers: playerWins
+          topPlayers: playerWins,
         });
 
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
+        console.error("Error fetching data:", err);
+        setError(err instanceof Error ? err.message : "Failed to load data");
         setLoading(false);
 
         // Set default values on error
@@ -112,13 +128,18 @@ const Dashboard: React.FC = () => {
           totalPlayers: 0,
           totalPlays: 0,
           recentPlays: [],
-          topPlayers: []
+          topPlayers: [],
         });
       }
     };
 
     fetchDashboardData();
   }, []);
+
+  const getAvailableYears = (plays: Play[]): number[] => {
+    const years = plays.map((play) => new Date(play.start_time).getFullYear());
+    return Array.from(new Set(years)).sort((a, b) => b - a); // Sort descending
+  };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -148,32 +169,73 @@ const Dashboard: React.FC = () => {
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card title="Total Games">
-          <div className="text-4xl font-bold text-blue-600">{stats.totalGames}</div>
+          <div className="text-4xl font-bold text-blue-600">
+            {stats.totalGames}
+          </div>
         </Card>
         <Card title="Total Players">
-          <div className="text-4xl font-bold text-green-600">{stats.totalPlayers}</div>
+          <div className="text-4xl font-bold text-green-600">
+            {stats.totalPlayers}
+          </div>
         </Card>
         <Card title="Total Plays">
-          <div className="text-4xl font-bold text-purple-600">{stats.totalPlays}</div>
+          <div className="text-4xl font-bold text-purple-600">
+            {stats.totalPlays}
+          </div>
         </Card>
       </div>
 
       {/* Overall Player Rankings */}
       <div className="mt-8 mb-8">
-        <Card title="Overall Player Rankings">
+        <Card title="Player Rankings">
+          <div className="mb-4 flex justify-end">
+            <select
+              value={selectedYear || ""}
+              onChange={(e) =>
+                setSelectedYear(
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="">All Time</option>
+              {getAvailableYears(gamePlays).map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="divide-y">
-            {calculateOverallPlayerStats(games, gamePlays, players).map((stat, index) => (
-              <div key={stat.player_id} className="py-4 flex items-center justify-between">
+            {calculateOverallPlayerStats(
+              games,
+              gamePlays,
+              players,
+              selectedYear
+            ).map((stat, index) => (
+              <div
+                key={stat.player_id}
+                className="py-4 flex items-center justify-between"
+              >
                 <div className="flex items-center space-x-4">
                   <span className="text-lg font-medium w-8">{index + 1}</span>
-                  <Link to={`/players/${stat.player_id}`} className="hover:text-blue-600">
+                  <Link
+                    to={`/players/${stat.player_id}`}
+                    className="hover:text-blue-600"
+                  >
                     {stat.player_name}
                   </Link>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">{stat.total_plays} plays</span>
-                  <span className={`font-bold ${getGradeColor(stat.grade_point)}`}>
-                    {stat.grade_point.toFixed(2)} ({getGradeLabel(Number(stat.grade_point.toFixed(2)))})
+                  <span className="text-sm text-gray-600">
+                    {stat.total_plays} plays
+                  </span>
+                  <span
+                    className={`font-bold ${getGradeColor(stat.grade_point)}`}
+                  >
+                    {stat.grade_point.toFixed(2)} (
+                    {getGradeLabel(Number(stat.grade_point.toFixed(2)))})
                   </span>
                 </div>
               </div>
@@ -206,9 +268,14 @@ const Dashboard: React.FC = () => {
         <Card title="Number of Wins Rankings">
           <div className="divide-y">
             {stats.topPlayers.map((player, index) => (
-              <div key={index} className="py-3 flex justify-between items-center">
+              <div
+                key={index}
+                className="py-3 flex justify-between items-center"
+              >
                 <span className="font-medium">{player.player_name}</span>
-                <span className="text-sm text-gray-600">{player.wins} wins</span>
+                <span className="text-sm text-gray-600">
+                  {player.wins} wins
+                </span>
               </div>
             ))}
           </div>
