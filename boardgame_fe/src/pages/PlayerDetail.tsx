@@ -87,14 +87,22 @@ const PlayerDetail: React.FC = () => {
         );
         if (filteredGamePlays.length === 0) return null;
 
-        const playerResults = filteredGamePlays.flatMap((play) =>
-          play.results.filter((r) => r.player_id === Number(id))
-        );
+        const playerResults = filteredGamePlays.flatMap((play) => {
+          const result = play.results.find((r) => r.player_id === Number(id));
+          if (result) {
+            // Add total players count to each result
+            return [{
+              ...result,
+              totalPlayers: play.results.length
+            }];
+          }
+          return [];
+        });
 
         if (playerResults.length === 0) return null;
 
         const totalPoints = playerResults.reduce(
-          (sum, result) => sum + getRankGradePoint(result.rank),
+          (sum, result) => sum + getRankGradePoint(result.rank, result.totalPlayers),
           0
         );
 
