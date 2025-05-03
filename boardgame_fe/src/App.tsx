@@ -9,6 +9,7 @@ import PlayerDirectory from './pages/PlayerDirectory';
 import PlayerDetail from './pages/PlayerDetail';
 import GamePlayLog from './pages/GamePlayLog';
 import AddGamePlay from './pages/AddGamePlay';
+import EditGamePlay from './components/gamePlays/EditGamePlay';
 import './index.css';
 import './App.css';
 
@@ -23,12 +24,15 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/games" element={<GameLibrary />} />
             <Route path="/games/:id" element={<GameDetail />} />
+            
             <Route path="/players" element={<PlayerDirectory />} />
             <Route path="/players/:id" element={<PlayerDetail />} />
+            <Route path="/players/add" element={<AddPlayer />} />
+            
             <Route path="/game-plays" element={<GamePlayLog />} />
             <Route path="/game-plays/add" element={<AddGamePlay />} />
-            <Route path="/players/add" element={<AddPlayer />} />
             <Route path="/game-plays/:id" element={<GamePlayDetail />} />
+            <Route path="/game-plays/:id/edit" element={<EditGamePlay />} />
           </Routes>
         </main>
       </div>

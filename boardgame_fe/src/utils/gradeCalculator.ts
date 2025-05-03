@@ -2,6 +2,12 @@ import { Play } from "../models/Play";
 import { Player } from "../models/Player";
 import { Game } from "../models/Game";
 
+export const getPlayerCount = (results: any[]): number => {
+  if (!results || results.length === 0) return 0;
+  // Find the highest rank number (which represents total player count)
+  return Math.max(...results.map(r => r.rank));
+};
+
 export const getRankGradePoint = (
   rank: number,
   totalPlayers: number
@@ -54,7 +60,7 @@ export const calculateGamePlayerStats = (
 
   // Calculate total points and plays for each player
   gamePlays.forEach((play) => {
-    const totalPlayers = play.results?.length || 0;
+    const totalPlayers = getPlayerCount(play.results);
 
     play.results?.forEach((result) => {
       if (!result.player_id) return;
@@ -105,7 +111,7 @@ export const calculateOverallPlayerStats = (
 
   // Calculate stats for each player for each game
   filteredGamePlays.forEach((play) => {
-    const totalPlayers = play.results?.length || 0;
+    const totalPlayers = getPlayerCount(play.results);
 
     const game = games.find((g) => g.game_id === play.game_id);
     if (!game) {

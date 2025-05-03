@@ -14,6 +14,7 @@ import {
   getGradeColor,
   getRankGradePoint,
   calculateOverallPlayerStats,
+  getPlayerCount,
 } from "../utils/gradeCalculator";
 
 const PlayerDetail: React.FC = () => {
@@ -93,7 +94,7 @@ const PlayerDetail: React.FC = () => {
             // Add total players count to each result
             return [{
               ...result,
-              totalPlayers: play.results.length
+              totalPlayers: getPlayerCount(play.results),
             }];
           }
           return [];

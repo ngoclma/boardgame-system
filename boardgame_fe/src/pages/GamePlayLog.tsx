@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import Card from '../components/common/Card';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorMessage from '../components/common/ErrorMessage';
-import { getGamePlays } from '../api/gamePlayApi';
-import { getGames } from '../api/gameApi';
-import { getPlayers } from '../api/playerApi';
-import { Play } from '../models/Play';
-import { Game } from '../models/Game';
-import { Player } from '../models/Player';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import Card from "../components/common/Card";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import ErrorMessage from "../components/common/ErrorMessage";
+import { getGamePlays } from "../api/gamePlayApi";
+import { getGames } from "../api/gameApi";
+import { getPlayers } from "../api/playerApi";
+import { Play } from "../models/Play";
+import { Game } from "../models/Game";
+import { Player } from "../models/Player";
+import { PlusIcon } from "@heroicons/react/24/outline";
 
 const GamePlayLog: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -18,10 +18,10 @@ const GamePlayLog: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [filters, setFilters] = useState({
-    gameId: '',
-    playerId: '',
-    dateFrom: '',
-    dateTo: '',
+    gameId: "",
+    playerId: "",
+    dateFrom: "",
+    dateTo: "",
   });
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const GamePlayLog: React.FC = () => {
         setPlayers(playersData);
         setLoading(false);
       } catch (err) {
-        setError('Failed to load game plays');
+        setError("Failed to load game plays");
         setLoading(false);
       }
     };
@@ -45,20 +45,28 @@ const GamePlayLog: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const filteredGamePlays = gamePlays.filter(play => {
-    const matchesGame = !filters.gameId || play.game_id === parseInt(filters.gameId);
-    const matchesPlayer = !filters.playerId || play.results.some(r => r.player_id === parseInt(filters.playerId));
-    const matchesDateFrom = !filters.dateFrom || new Date(play.start_time) >= new Date(filters.dateFrom);
-    const matchesDateTo = !filters.dateTo || new Date(play.start_time) <= new Date(filters.dateTo);
-    
+  const filteredGamePlays = gamePlays.filter((play) => {
+    const matchesGame =
+      !filters.gameId || play.game_id === parseInt(filters.gameId);
+    const matchesPlayer =
+      !filters.playerId ||
+      play.results.some((r) => r.player_id === parseInt(filters.playerId));
+    const matchesDateFrom =
+      !filters.dateFrom ||
+      new Date(play.start_time) >= new Date(filters.dateFrom);
+    const matchesDateTo =
+      !filters.dateTo || new Date(play.start_time) <= new Date(filters.dateTo);
+
     return matchesGame && matchesPlayer && matchesDateFrom && matchesDateTo;
   });
 
@@ -81,7 +89,9 @@ const GamePlayLog: React.FC = () => {
       <Card className="mb-6">
         <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Game</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Game
+            </label>
             <select
               name="gameId"
               value={filters.gameId}
@@ -89,15 +99,19 @@ const GamePlayLog: React.FC = () => {
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
             >
               <option value="">All Games</option>
-              {games.map(game => (
-                <option key={game.game_id} value={game.game_id}>
-                  {game.name}
-                </option>
-              ))}
+              {[...games]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((game) => (
+                  <option key={game.game_id} value={game.game_id}>
+                    {game.name}
+                  </option>
+                ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Player</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Player
+            </label>
             <select
               name="playerId"
               value={filters.playerId}
@@ -105,7 +119,7 @@ const GamePlayLog: React.FC = () => {
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
             >
               <option value="">All Players</option>
-              {players.map(player => (
+              {players.map((player) => (
                 <option key={player.player_id} value={player.player_id}>
                   {player.name}
                 </option>
@@ -113,7 +127,9 @@ const GamePlayLog: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              From Date
+            </label>
             <input
               type="date"
               name="dateFrom"
@@ -123,7 +139,9 @@ const GamePlayLog: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              To Date
+            </label>
             <input
               type="date"
               name="dateTo"
@@ -142,8 +160,12 @@ const GamePlayLog: React.FC = () => {
           </div>
         ) : (
           filteredGamePlays
-            .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
-            .map(play => (
+            .sort(
+              (a, b) =>
+                new Date(b.start_time).getTime() -
+                new Date(a.start_time).getTime()
+            )
+            .map((play) => (
               <Card key={play.play_id}>
                 <Link
                   to={`/game-plays/${play.play_id}`}
@@ -152,29 +174,39 @@ const GamePlayLog: React.FC = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h2 className="text-xl font-bold mb-2">
-                        {games.find(g => g.game_id === play.game_id)?.name}
+                        {games.find((g) => g.game_id === play.game_id)?.name}
                       </h2>
                       <p className="text-gray-600">
-                        {new Date(play.start_time).toLocaleDateString()} •{' '}
-                        {play.mode || 'Standard Game'}
+                        {new Date(play.start_time).toLocaleDateString()} •{" "}
+                        {play.mode || "Standard Game"}
                       </p>
                       <div className="mt-2">
                         {play.results
                           .sort((a, b) => a.rank - b.rank)
                           .map((result, index) => (
-                            <span key={result.player_id} className="text-sm text-gray-600">
-                              {index > 0 ? ', ' : ''}
-                              {players.find(p => p.player_id === result.player_id)?.name}
-                              {result.score !== null ? ` (${result.score})` : ''}
+                            <span
+                              key={result.player_id}
+                              className="text-sm text-gray-600"
+                            >
+                              {index > 0 ? ", " : ""}
+                              {
+                                players.find(
+                                  (p) => p.player_id === result.player_id
+                                )?.name
+                              }
+                              {result.score !== null
+                                ? ` (${result.score})`
+                                : ""}
                             </span>
                           ))}
                       </div>
                     </div>
                     <div className="text-sm text-gray-500">
                       {Math.round(
-                        (new Date(play.end_time).getTime() - new Date(play.start_time).getTime()) /
+                        (new Date(play.end_time).getTime() -
+                          new Date(play.start_time).getTime()) /
                           (1000 * 60)
-                      )}{' '}
+                      )}{" "}
                       min
                     </div>
                   </div>

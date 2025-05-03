@@ -9,6 +9,7 @@ import { getPlayer } from "../../api/playerApi";
 import { Player } from "../../models/Player";
 import { Play } from "../../models/Play";
 import { Game } from "../../models/Game";
+import { PencilIcon } from "@heroicons/react/24/outline";
 
 const GamePlayDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,9 +65,16 @@ const GamePlayDetail: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
+      <div className="flex justify-between items-center mb-6">
         <Link to="/game-plays" className="text-blue-600 hover:text-blue-800">
           ← Back to Game Plays
+        </Link>
+        <Link
+          to={`/game-plays/${id}/edit`}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
+        >
+          <PencilIcon className="h-5 w-5" />
+          <span>Edit Game Play</span>
         </Link>
       </div>
 
