@@ -28,7 +28,8 @@ interface DashboardStats {
   }>;
   topPlayers: Array<{
     player_name: string;
-    wins: number;
+    winRate: number;
+    totalPlays: number;
   }>;
 }
 
@@ -48,6 +49,7 @@ const Dashboard: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number | undefined>(
     undefined
   );
+  const [minPlays, setMinPlays] = useState<number>(10);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -96,16 +98,29 @@ const Dashboard: React.FC = () => {
           });
 
         // Calculate top players with null checks
-        const playerWins = playersArray
-          .map((player) => ({
-            player_name: player.name,
-            wins: gamePlaysArray.filter((play) =>
+        const playerStats = playersArray
+          .map((player) => {
+            const playerPlays = gamePlaysArray.filter((play) =>
+              play?.results?.some((r) => r?.player_id === player.player_id)
+            );
+
+            const wins = playerPlays.filter((play) =>
               play?.results?.some(
                 (r) => r?.player_id === player.player_id && r?.rank === 1
               )
-            ).length,
-          }))
-          .sort((a, b) => b.wins - a.wins)
+            ).length;
+
+            const totalPlays = playerPlays.length;
+            const winRate = totalPlays > 0 ? (wins / totalPlays) * 100 : 0;
+
+            return {
+              player_name: player.name,
+              winRate: Number(winRate.toFixed(1)),
+              totalPlays,
+            };
+          })
+          .filter((player) => player.totalPlays >= 3) // Optional: Only show players with minimum games
+          .sort((a, b) => b.winRate - a.winRate)
           .slice(0, 5);
 
         setStats({
@@ -113,7 +128,7 @@ const Dashboard: React.FC = () => {
           totalPlayers: playersArray.length,
           totalPlays: gamePlaysArray.length,
           recentPlays,
-          topPlayers: playerWins,
+          topPlayers: playerStats,
         });
 
         setLoading(false);
@@ -139,6 +154,43 @@ const Dashboard: React.FC = () => {
   const getAvailableYears = (plays: Play[]): number[] => {
     const years = plays.map((play) => new Date(play.start_time).getFullYear());
     return Array.from(new Set(years)).sort((a, b) => b - a); // Sort descending
+  };
+
+  const calculateWinRates = (
+    players: Player[],
+    plays: Play[],
+    minPlays: number,
+    year?: number
+  ) => {
+    const filteredPlays = year
+      ? plays.filter((play) => new Date(play.start_time).getFullYear() === year)
+      : plays;
+
+    return players
+      .map((player) => {
+        const playerPlays = filteredPlays.filter((play) =>
+          play?.results?.some((r) => r?.player_id === player.player_id)
+        );
+
+        const wins = playerPlays.filter((play) =>
+          play?.results?.some(
+            (r) => r?.player_id === player.player_id && r?.rank === 1
+          )
+        ).length;
+
+        const totalPlays = playerPlays.length;
+        const winRate = totalPlays > 0 ? (wins / totalPlays) * 100 : 0;
+
+        return {
+          player_id: player.player_id,
+          player_name: player.name,
+          winRate: Number(winRate.toFixed(1)),
+          totalPlays,
+        };
+      })
+      .filter((player) => player.totalPlays >= minPlays)
+      .sort((a, b) => b.winRate - a.winRate)
+      .slice(0, 5);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -188,7 +240,19 @@ const Dashboard: React.FC = () => {
       {/* Overall Player Rankings */}
       <div className="mt-8 mb-8">
         <Card title="Player Rankings">
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex justify-end space-x-4">
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-600">Min. Plays:</label>
+              <input
+                type="number"
+                min="1"
+                value={minPlays}
+                onChange={(e) =>
+                  setMinPlays(Math.max(1, parseInt(e.target.value) || 1))
+                }
+                className="p-2 w-16 border border-gray-300 rounded-md text-sm"
+              />
+            </div>
             <select
               value={selectedYear || ""}
               onChange={(e) =>
@@ -196,7 +260,7 @@ const Dashboard: React.FC = () => {
                   e.target.value ? Number(e.target.value) : undefined
                 )
               }
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="p-2 border border-gray-300 rounded-md text-sm"
             >
               <option value="">All Time</option>
               {getAvailableYears(gamePlays).map((year) => (
@@ -213,33 +277,35 @@ const Dashboard: React.FC = () => {
               gamePlays,
               players,
               selectedYear
-            ).map((stat, index) => (
-              <div
-                key={stat.player_id}
-                className="py-4 flex items-center justify-between"
-              >
-                <div className="flex items-center space-x-4">
-                  <span className="text-lg font-medium w-8">{index + 1}</span>
-                  <Link
-                    to={`/players/${stat.player_id}`}
-                    className="hover:text-blue-600"
-                  >
-                    {stat.player_name}
-                  </Link>
+            )
+              .filter((stat) => stat.total_plays >= minPlays)
+              .map((stat, index) => (
+                <div
+                  key={stat.player_id}
+                  className="py-4 flex items-center justify-between"
+                >
+                  <div className="flex items-center space-x-4">
+                    <span className="text-lg font-medium w-8">{index + 1}</span>
+                    <Link
+                      to={`/players/${stat.player_id}`}
+                      className="hover:text-blue-600"
+                    >
+                      {stat.player_name}
+                    </Link>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600">
+                      {stat.total_plays} plays
+                    </span>
+                    <span
+                      className={`font-bold ${getGradeColor(stat.grade_point)}`}
+                    >
+                      {stat.grade_point.toFixed(2)} (
+                      {getGradeLabel(Number(stat.grade_point.toFixed(2)))})
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">
-                    {stat.total_plays} plays
-                  </span>
-                  <span
-                    className={`font-bold ${getGradeColor(stat.grade_point)}`}
-                  >
-                    {stat.grade_point.toFixed(2)} (
-                    {getGradeLabel(Number(stat.grade_point.toFixed(2)))})
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </Card>
       </div>
@@ -264,20 +330,32 @@ const Dashboard: React.FC = () => {
           </div>
         </Card>
 
-        {/* Number of Wins Rankings */}
-        <Card title="Number of Wins Rankings">
+        {/* Win Rate Rankings */}
+        <Card title="Win Rate Rankings">
           <div className="divide-y">
-            {stats.topPlayers.map((player, index) => (
-              <div
-                key={index}
-                className="py-3 flex justify-between items-center"
-              >
-                <span className="font-medium">{player.player_name}</span>
-                <span className="text-sm text-gray-600">
-                  {player.wins} wins
-                </span>
-              </div>
-            ))}
+            {calculateWinRates(players, gamePlays, minPlays, selectedYear).map(
+              (player) => (
+                <div
+                  key={player.player_id}
+                  className="py-3 flex justify-between items-center"
+                >
+                  <Link
+                    to={`/players/${player.player_id}`}
+                    className="font-medium hover:text-blue-600"
+                  >
+                    {player.player_name}
+                  </Link>
+                  <div className="text-sm text-gray-600 space-x-2">
+                    <span className="font-semibold text-blue-600">
+                      {player.winRate}%
+                    </span>
+                    <span className="text-gray-400">
+                      ({player.totalPlays} plays)
+                    </span>
+                  </div>
+                </div>
+              )
+            )}
           </div>
         </Card>
       </div>
