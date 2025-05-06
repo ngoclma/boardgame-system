@@ -82,7 +82,7 @@ const GamePlayLog: React.FC = () => {
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
         >
           <PlusIcon className="h-5 w-5" />
-          <span>Add New Record</span>
+          <span>Add Record</span>
         </Link>
       </div>
 
@@ -96,7 +96,7 @@ const GamePlayLog: React.FC = () => {
               name="gameId"
               value={filters.gameId}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
+              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 mt-1"
             >
               <option value="">All Games</option>
               {[...games]
@@ -116,7 +116,7 @@ const GamePlayLog: React.FC = () => {
               name="playerId"
               value={filters.playerId}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
+              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 mt-1"
             >
               <option value="">All Players</option>
               {players.map((player) => (
@@ -135,7 +135,7 @@ const GamePlayLog: React.FC = () => {
               name="dateFrom"
               value={filters.dateFrom}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
+              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 mt-1"
             />
           </div>
           <div>
@@ -147,7 +147,7 @@ const GamePlayLog: React.FC = () => {
               name="dateTo"
               value={filters.dateTo}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2"
+              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 mt-1"
             />
           </div>
         </div>
@@ -166,10 +166,10 @@ const GamePlayLog: React.FC = () => {
                 new Date(a.start_time).getTime()
             )
             .map((play) => (
-              <Card key={play.play_id}>
+              <Card key={play.play_id} className="transition-all duration-300 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-50 rounded-lg">
                 <Link
                   to={`/game-plays/${play.play_id}`}
-                  className="block p-4 hover:bg-gray-50"
+                  className="block p-4"
                 >
                   <div className="flex justify-between items-start">
                     <div>

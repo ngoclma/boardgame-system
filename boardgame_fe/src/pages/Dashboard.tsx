@@ -6,7 +6,13 @@ import ErrorMessage from "../components/common/ErrorMessage";
 import { getGamePlays } from "../api/gamePlayApi";
 import { getPlayers } from "../api/playerApi";
 import { getGames } from "../api/gameApi";
-import { PlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  DocumentTextIcon,
+  PuzzlePieceIcon,
+  UserGroupIcon,
+  PlayIcon,
+} from "@heroicons/react/24/outline";
 import {
   calculateOverallPlayerStats,
   getGradeLabel,
@@ -198,20 +204,25 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Game Gala Dashboard
+        </h1>
+        <p className="text-gray-600">Track 717 & Jelebu adventures! 🎮 🎲</p>
+      </div>
 
       {/* Quick Actions */}
-      <div className="mt-8 flex gap-4 mb-8">
+      <div className="mt-4 flex gap-4 mb-8 justify-center">
         <Link
           to="/game-plays/add"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-full hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 inline-flex items-center space-x-2"
         >
           <PlusIcon className="h-5 w-5" />
-          <span>Add New Record</span>
+          <span>Add Record</span>
         </Link>
         <Link
           to="/game-plays"
-          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors inline-flex items-center space-x-2"
+          className="px-6 py-3 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors inline-flex items-center space-x-2"
         >
           <DocumentTextIcon className="h-5 w-5" />
           <span>View Game Log</span>
@@ -220,19 +231,37 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card title="Total Games">
-          <div className="text-4xl font-bold text-blue-600">
-            {stats.totalGames}
+        <Card>
+          <div className="p-4 text-center">
+            <PuzzlePieceIcon className="h-12 w-12 mx-auto mb-4 text-blue-500" />
+            <h3 className="text-lg font-medium text-gray-600 mb-2">
+              Total Games
+            </h3>
+            <div className="text-4xl font-bold text-blue-600">
+              {stats.totalGames}
+            </div>
           </div>
         </Card>
-        <Card title="Total Players">
-          <div className="text-4xl font-bold text-green-600">
-            {stats.totalPlayers}
+        <Card>
+          <div className="p-4 text-center">
+            <UserGroupIcon className="h-12 w-12 mx-auto mb-4 text-green-500" />
+            <h3 className="text-lg font-medium text-gray-600 mb-2">
+              Total Players
+            </h3>
+            <div className="text-4xl font-bold text-green-600">
+              {stats.totalPlayers}
+            </div>
           </div>
         </Card>
-        <Card title="Total Plays">
-          <div className="text-4xl font-bold text-purple-600">
-            {stats.totalPlays}
+        <Card>
+          <div className="p-4 text-center">
+            <PlayIcon className="h-12 w-12 mx-auto mb-4 text-purple-500" />
+            <h3 className="text-lg font-medium text-gray-600 mb-2">
+              Total Plays
+            </h3>
+            <div className="text-4xl font-bold text-purple-600">
+              {stats.totalPlays}
+            </div>
           </div>
         </Card>
       </div>
@@ -282,10 +311,12 @@ const Dashboard: React.FC = () => {
               .map((stat, index) => (
                 <div
                   key={stat.player_id}
-                  className="py-4 flex items-center justify-between"
+                  className="py-4 flex items-center justify-between hover:bg-blue-50 transition-colors rounded-lg px-4"
                 >
                   <div className="flex items-center space-x-4">
-                    <span className="text-lg font-medium w-8">{index + 1}</span>
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold">
+                      {index + 1}
+                    </div>
                     <Link
                       to={`/players/${stat.player_id}`}
                       className="hover:text-blue-600"
@@ -334,17 +365,20 @@ const Dashboard: React.FC = () => {
         <Card title="Win Rate Rankings">
           <div className="divide-y">
             {calculateWinRates(players, gamePlays, minPlays, selectedYear).map(
-              (player) => (
+              (player, index) => (
                 <div
                   key={player.player_id}
                   className="py-3 flex justify-between items-center"
                 >
-                  <Link
-                    to={`/players/${player.player_id}`}
-                    className="font-medium hover:text-blue-600"
-                  >
-                    {player.player_name}
-                  </Link>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-lg font-medium w-8">{index + 1}</span>
+                    <Link
+                      to={`/players/${player.player_id}`}
+                      className="font-medium hover:text-blue-600"
+                    >
+                      {player.player_name}
+                    </Link>
+                  </div>
                   <div className="text-sm text-gray-600 space-x-2">
                     <span className="font-semibold text-blue-600">
                       {player.winRate}%

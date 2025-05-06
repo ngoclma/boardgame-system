@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Card from "../components/common/Card";
-import LoadingSpinner from "../components/common/LoadingSpinner";
-import ErrorMessage from "../components/common/ErrorMessage";
-import { getPlayer } from "../api/playerApi";
-import { getGamePlays } from "../api/gamePlayApi";
-import { getGames } from "../api/gameApi";
-import { Player } from "../models/Player";
-import { Play } from "../models/Play";
-import { Game } from "../models/Game";
+import Card from "../../components/common/Card";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import { getPlayer } from "../../api/playerApi";
+import { getGamePlays } from "../../api/gamePlayApi";
+import { getGames } from "../../api/gameApi";
+import { Player } from "../../models/Player";
+import { Play } from "../../models/Play";
+import { Game } from "../../models/Game";
 import {
   getGradeLabel,
   getGradeColor,
   getRankGradePoint,
   calculateOverallPlayerStats,
   getPlayerCount,
-} from "../utils/gradeCalculator";
+} from "../../utils/gradeCalculator";
 
 const PlayerDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

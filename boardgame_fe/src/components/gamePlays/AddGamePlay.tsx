@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Game } from "../models/Game";
-import { Player } from "../models/Player";
-import { Play } from "../models/Play";
-import Card from "../components/common/Card";
-import LoadingSpinner from "../components/common/LoadingSpinner";
-import ErrorMessage from "../components/common/ErrorMessage";
-import { getGames } from "../api/gameApi";
-import { getPlayers } from "../api/playerApi";
-import { createGamePlay } from "../api/gamePlayApi";
+import { Game } from "../../models/Game";
+import { Player } from "../../models/Player";
+import { Play } from "../../models/Play";
+import Card from "../../components/common/Card";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import { getGames } from "../../api/gameApi";
+import { getPlayers } from "../../api/playerApi";
+import { createGamePlay } from "../../api/gamePlayApi";
 import { TrashIcon } from "@heroicons/react/24/outline";
 
 const AddGamePlay: React.FC = () => {

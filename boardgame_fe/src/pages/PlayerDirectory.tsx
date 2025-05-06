@@ -131,7 +131,7 @@ const PlayerDirectory: React.FC = () => {
           to="/players/add"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          Add New Player
+          Add Player
         </Link>
       </div>
 
@@ -164,10 +164,10 @@ const PlayerDirectory: React.FC = () => {
           ])[0];
 
           return (
-            <Card key={player.player_id}>
+            <Card key={player.player_id} className="transition-all duration-300 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-50 rounded-lg">
               <Link
                 to={`/players/${player.player_id}`}
-                className="block p-4 hover:bg-gray-50"
+                className="block p-4"
               >
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-bold">{player.name}</h2>

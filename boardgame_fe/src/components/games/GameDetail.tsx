@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import Card from "../components/common/Card";
-import LoadingSpinner from "../components/common/LoadingSpinner";
-import ErrorMessage from "../components/common/ErrorMessage";
-import { getGame } from "../api/gameApi";
-import { getGamePlays } from "../api/gamePlayApi";
-import { Game } from "../models/Game";
-import { Play } from "../models/Play";
-import { Player } from "../models/Player";
-import { getPlayers } from "../api/playerApi";
+import Card from "../common/Card";
+import LoadingSpinner from "../common/LoadingSpinner";
+import ErrorMessage from "../common/ErrorMessage";
+import { getGame } from "../../api/gameApi";
+import { getGamePlays } from "../../api/gamePlayApi";
+import { Game } from "../../models/Game";
+import { Play } from "../../models/Play";
+import { Player } from "../../models/Player";
+import { getPlayers } from "../../api/playerApi";
 import {
   calculateGamePlayerStats,
   getGradeLabel,
   getGradeColor,
-} from "../utils/gradeCalculator";
+} from "../../utils/gradeCalculator";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import { cleanDescription } from "../../utils/textUtils";
 
 const GameDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,7 @@ const GameDetail: React.FC = () => {
   const [game, setGame] = useState<Game | null>(null);
   const [gamePlays, setGamePlays] = useState<Play[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -109,7 +111,7 @@ const GameDetail: React.FC = () => {
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
         >
           <PlusIcon className="h-5 w-5" />
-          <span>Add New Record</span>
+          <span>Add Record</span>
         </Link>
       </div>
 
@@ -125,7 +127,27 @@ const GameDetail: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Description</h3>
-              <p className="mt-1">{game.description}</p>
+              <div className="mt-1">
+                <p
+                  className={`whitespace-pre-wrap ${
+                    !isDescriptionExpanded ? "line-clamp-3" : ""
+                  }`}
+                >
+                  {game.description
+                    ? cleanDescription(game.description)
+                    : "No description available"}
+                </p>
+                {game.description && game.description.length > 200 && (
+                  <button
+                    onClick={() =>
+                      setIsDescriptionExpanded(!isDescriptionExpanded)
+                    }
+                    className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    {isDescriptionExpanded ? "Show Less" : "Read More"}
+                  </button>
+                )}
+              </div>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">
@@ -222,8 +244,8 @@ const GameDetail: React.FC = () => {
           </div>
         </Card>
 
-        {/* Recent Plays */}
-        <Card title="Recent Plays">
+        {/* Game Plays */}
+        <Card title="Game Plays">
           <div className="divide-y">
             {!gamePlays?.length ? (
               <p className="py-4 text-gray-500">No plays recorded yet</p>
@@ -234,7 +256,6 @@ const GameDetail: React.FC = () => {
                     new Date(b?.start_time || 0).getTime() -
                     new Date(a?.start_time || 0).getTime()
                 )
-                .slice(0, 5)
                 .map((play) => (
                   <div key={play?.play_id} className="py-4">
                     <Link
@@ -248,14 +269,34 @@ const GameDetail: React.FC = () => {
                               ? new Date(play.start_time).toLocaleDateString()
                               : "Unknown Date"}
                           </p>
-                          <p className="text-sm text-gray-600">
-                            {play?.mode
-                              ? `Mode: ${play.mode}`
-                              : "Standard Game"}
+                          <p className="text-sm text-gray-600 mt-2">
+                            {play.results
+                              .sort((a, b) => a.rank - b.rank)
+                              .map((result, index) => (
+                                <span
+                                  key={result.player_id}
+                                  className="text-sm text-gray-600"
+                                >
+                                  {index > 0 ? ", " : ""}
+                                  {
+                                    players.find(
+                                      (p) => p.player_id === result.player_id
+                                    )?.name
+                                  }
+                                  {result.score !== null
+                                    ? ` (${result.score})`
+                                    : ""}
+                                </span>
+                              ))}
                           </p>
                         </div>
-                        <div className="text-sm text-gray-600">
-                          {play?.results?.length || 0} players
+                        <div className="text-sm text-gray-500">
+                          {Math.round(
+                            (new Date(play.end_time).getTime() -
+                              new Date(play.start_time).getTime()) /
+                              (1000 * 60)
+                          )}{" "}
+                          min
                         </div>
                       </div>
                     </Link>

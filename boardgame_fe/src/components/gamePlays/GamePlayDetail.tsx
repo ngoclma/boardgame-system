@@ -66,8 +66,11 @@ const GamePlayDetail: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <Link to="/game-plays" className="text-blue-600 hover:text-blue-800">
-          ← Back to Game Plays
+        <Link
+          to={`/games/${game?.game_id}`}
+          className="text-blue-600 hover:text-blue-800"
+        >
+          ← Back to {game?.name || "Game Details"}
         </Link>
         <Link
           to={`/game-plays/${id}/edit`}
