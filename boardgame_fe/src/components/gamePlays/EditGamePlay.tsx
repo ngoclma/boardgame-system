@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import Card from "../common/Card";
 import LoadingSpinner from "../common/LoadingSpinner";
 import ErrorMessage from "../common/ErrorMessage";
@@ -14,6 +15,7 @@ import { TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 const EditGamePlay: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>([]);
@@ -124,6 +126,7 @@ const EditGamePlay: React.FC = () => {
       };
 
       await updateGamePlay(Number(id), payload);
+      queryClient.invalidateQueries({ queryKey: ['gamePlays'] });
       navigate(`/game-plays/${id}`);
     } catch (err) {
       console.error("Error updating game play:", err);

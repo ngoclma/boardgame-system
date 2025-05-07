@@ -1,92 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "../components/common/Card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import ErrorMessage from "../components/common/ErrorMessage";
-import { getPlayers } from "../api/playerApi";
-import { getGamePlays } from "../api/gamePlayApi";
-import { Player } from "../models/Player";
-import { Play } from "../models/Play";
-import { getGames } from "../api/gameApi";
 import {
   calculateOverallPlayerStats,
   getGradeLabel,
   getGradeColor,
 } from "../utils/gradeCalculator";
-import { Game } from "../models/Game";
+import { useGames, usePlayers, useGamePlays } from "../hooks";
 
 const PlayerDirectory: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [gamePlays, setGamePlays] = useState<Play[]>([]);
-  const [games, setGames] = useState<Game[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "plays" | "wins">("name");
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [playersData, playsData, gamesData] = await Promise.all([
-          getPlayers(),
-          getGamePlays(),
-          getGames(),
-        ]);
-
-        // Set default empty arrays if data is undefined
-        const players = Array.isArray(playersData) ? playersData : [];
-        const plays = Array.isArray(playsData) ? playsData : [];
-
-        setPlayers(
-          players.map((player) => ({
-            ...player,
-            no_total_wins: 0,
-            no_total_play: 0,
-            total_victory_points: 0,
-            victory_rate: 0,
-          })) || []
-        );
-
-        setGamePlays(
-          plays.map((play) => ({
-            play_id: play.play_id,
-            game_id: play.game_id,
-            start_time: play.start_time,
-            end_time: play.end_time,
-            mode: play.mode,
-            notes: play.notes,
-            results: Array.isArray(play.results)
-              ? play.results.map((player) => ({
-                  ...player,
-                  play_id: play.play_id,
-                  victory_points: player.score || 0,
-                }))
-              : [],
-            duration:
-              play.end_time && play.start_time
-                ? new Date(play.end_time).getTime() -
-                  new Date(play.start_time).getTime()
-                : 0,
-          })) || []
-        );
-
-        setGames(Array.isArray(gamesData) ? gamesData : []);
-
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
-        setLoading(false);
-
-        // Set empty arrays on error
-        setPlayers([]);
-        setGamePlays([]);
-        setGames([]);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const { data: games = [], isLoading: gamesLoading } = useGames();
+  const { data: players = [], isLoading: playersLoading } = usePlayers();
+  const { data: gamePlays = [], isLoading: playsLoading } = useGamePlays();
 
   const getPlayerStats = (playerId: number) => {
     const playerPlays = gamePlays.filter((play) =>
@@ -120,8 +49,11 @@ const PlayerDirectory: React.FC = () => {
       return statsB.wins - statsA.wins;
     });
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
+  const isLoading = gamesLoading || playersLoading || playsLoading;
+
+  if (isLoading) return <LoadingSpinner />;
+  if (!games || !players || !gamePlays)
+    return <ErrorMessage message="Failed to load data" />;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -164,11 +96,11 @@ const PlayerDirectory: React.FC = () => {
           ])[0];
 
           return (
-            <Card key={player.player_id} className="transition-all duration-300 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-50 rounded-lg">
-              <Link
-                to={`/players/${player.player_id}`}
-                className="block p-4"
-              >
+            <Card
+              key={player.player_id}
+              className="transition-all duration-300 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-50 rounded-lg"
+            >
+              <Link to={`/players/${player.player_id}`} className="block p-4">
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-bold">{player.name}</h2>
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import { createPlayer } from '../../api/playerApi';
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PlayerFormData {
   name: string;
@@ -10,6 +11,7 @@ interface PlayerFormData {
 
 const AddPlayer: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient(); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<PlayerFormData>({
@@ -24,6 +26,7 @@ const AddPlayer: React.FC = () => {
 
     try {
       await createPlayer(formData);
+      queryClient.invalidateQueries({ queryKey: ['players'] });
       navigate('/players');
     } catch (err) {
       console.error('Error creating player:', err);

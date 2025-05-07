@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Game } from "../../models/Game";
 import { Player } from "../../models/Player";
 import { Play } from "../../models/Play";
@@ -13,6 +14,7 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 
 const AddGamePlay: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient(); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>([]);
@@ -125,6 +127,7 @@ const AddGamePlay: React.FC = () => {
       };
 
       await createGamePlay(payload);
+      queryClient.invalidateQueries({ queryKey: ['gamePlays'] });
       navigate("/game-plays");
     } catch (err) {
       console.error("Error fetching data:", err);

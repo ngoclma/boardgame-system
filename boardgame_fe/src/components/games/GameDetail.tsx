@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import Card from "../common/Card";
 import LoadingSpinner from "../common/LoadingSpinner";
 import ErrorMessage from "../common/ErrorMessage";
-import { getGame } from "../../api/gameApi";
-import { getGamePlays } from "../../api/gamePlayApi";
-import { Game } from "../../models/Game";
-import { Play } from "../../models/Play";
-import { Player } from "../../models/Player";
-import { getPlayers } from "../../api/playerApi";
 import {
   calculateGamePlayerStats,
   getGradeLabel,
@@ -16,45 +10,19 @@ import {
 } from "../../utils/gradeCalculator";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { cleanDescription } from "../../utils/textUtils";
+import { usePlayers, useGamePlays, useGameDetail } from '../../hooks';
 
 const GameDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [game, setGame] = useState<Game | null>(null);
-  const [gamePlays, setGamePlays] = useState<Play[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  useEffect(() => {
-    const fetchGameData = async () => {
-      try {
-        setLoading(true);
-        const [gameData, gamePlayData, playerData] = await Promise.all([
-          getGame(Number(id)),
-          getGamePlays(),
-          getPlayers(),
-        ]);
+  const { data: game, isLoading: gameLoading, error: gameError } = useGameDetail(Number(id));
+  const { data: allGamePlays = [], isLoading: playsLoading } = useGamePlays();
+  const { data: players = [], isLoading: playersLoading } = usePlayers();
 
-        setGame(gameData || null);
-        // Filter game plays for this specific game with null check
-        const plays = Array.isArray(gamePlayData) ? gamePlayData : [];
-        setGamePlays(plays.filter((play) => play?.game_id === Number(id)));
-        setPlayers(playerData || []);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching game data:", err);
-        setError("Failed to load game details");
-        setLoading(false);
-        setGame(null);
-        setGamePlays([]);
-      }
-    };
-
-    if (id) {
-      fetchGameData();
-    }
-  }, [id]);
+  const gamePlays = useMemo(() => {
+    return allGamePlays.filter((play) => play?.game_id === Number(id));
+  }, [allGamePlays, id]);
 
   const getComplexityColor = (complexity: number): string => {
     if (!complexity && complexity !== 0) return "text-gray-500";
@@ -66,8 +34,10 @@ const GameDetail: React.FC = () => {
     return "text-red-500";
   };
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
+  const isLoading = gameLoading || playsLoading || playersLoading;
+  
+  if (isLoading) return <LoadingSpinner />;
+  if (gameError) return <ErrorMessage message={gameError.message} />;
   if (!game) return <ErrorMessage message="Game not found" />;
 
   return (

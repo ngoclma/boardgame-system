@@ -1,22 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "../components/common/Card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import ErrorMessage from "../components/common/ErrorMessage";
-import { getGamePlays } from "../api/gamePlayApi";
-import { getGames } from "../api/gameApi";
-import { getPlayers } from "../api/playerApi";
-import { Play } from "../models/Play";
-import { Game } from "../models/Game";
-import { Player } from "../models/Player";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import { useGames, usePlayers, useGamePlays } from "../hooks";
 
 const GamePlayLog: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [gamePlays, setGamePlays] = useState<Play[]>([]);
-  const [games, setGames] = useState<Game[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
+  const { data: games = [], isLoading: gamesLoading } = useGames();
+  const { data: players = [], isLoading: playersLoading } = usePlayers();
+  const { data: gamePlays = [], isLoading: playsLoading } = useGamePlays();
   const [filters, setFilters] = useState({
     gameId: "",
     playerId: "",
@@ -24,26 +17,7 @@ const GamePlayLog: React.FC = () => {
     dateTo: "",
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [playsData, gamesData, playersData] = await Promise.all([
-          getGamePlays(),
-          getGames(),
-          getPlayers(),
-        ]);
-        setGamePlays(playsData);
-        setGames(gamesData);
-        setPlayers(playersData);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load game plays");
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const isLoading = gamesLoading || playersLoading || playsLoading;
 
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -70,8 +44,8 @@ const GamePlayLog: React.FC = () => {
     return matchesGame && matchesPlayer && matchesDateFrom && matchesDateTo;
   });
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
+  if (isLoading) return <LoadingSpinner />;
+  if (!games || !players || !gamePlays) return <ErrorMessage message="Failed to load data" />;
 
   return (
     <div className="container mx-auto px-4 py-8">

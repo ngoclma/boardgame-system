@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import Card from "../../components/common/Card";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
-import { getPlayer } from "../../api/playerApi";
-import { getGamePlays } from "../../api/gamePlayApi";
-import { getGames } from "../../api/gameApi";
-import { Player } from "../../models/Player";
-import { Play } from "../../models/Play";
-import { Game } from "../../models/Game";
 import {
   getGradeLabel,
   getGradeColor,
@@ -16,60 +10,34 @@ import {
   calculateOverallPlayerStats,
   getPlayerCount,
 } from "../../utils/gradeCalculator";
+import { useGames, useGamePlays, usePlayerDetail } from "../../hooks";
 
 const PlayerDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [player, setPlayer] = useState<Player | null>(null);
-  const [gamePlays, setGamePlays] = useState<Play[]>([]);
-  const [games, setGames] = useState<Game[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [playerData, playsData, gamesData] = await Promise.all([
-          getPlayer(Number(id)),
-          getGamePlays(),
-          getGames(),
-        ]);
+  const {
+    data: player,
+    isLoading: playerLoading,
+    error: playerError,
+  } = usePlayerDetail(Number(id));
 
-        // Add null checks and default values
-        setPlayer(playerData || null);
-        setGames(Array.isArray(gamesData) ? gamesData : []);
+  const { data: games = [], isLoading: gamesLoading } = useGames();
 
-        // Filter game plays for this player with null checks
-        const plays = Array.isArray(playsData) ? playsData : [];
-        const playerPlays = plays.filter(
-          (play) =>
-            play &&
-            Array.isArray(play.results) &&
-            play.results.some(
-              (result) => result && result.player_id === Number(id)
-            )
-        );
-        setGamePlays(playerPlays);
+  const { data: allGamePlays = [], isLoading: playsLoading } = useGamePlays();
 
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
-        setLoading(false);
+  const gamePlays = useMemo(() => {
+    return allGamePlays.filter(
+      (play) =>
+        play &&
+        Array.isArray(play.results) &&
+        play.results.some((result) => result && result.player_id === Number(id))
+    );
+  }, [allGamePlays, id]);
 
-        // Set default values on error
-        setPlayer(null);
-        setGames([]);
-        setGamePlays([]);
-      }
-    };
+  const isLoading = playerLoading || gamesLoading || playsLoading;
 
-    if (id) {
-      fetchData();
-    }
-  }, [id]);
-
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
+  if (isLoading) return <LoadingSpinner />;
+  if (playerError) return <ErrorMessage message={playerError.message} />;
   if (!player) return <ErrorMessage message="Player not found" />;
 
   // Calculate player statistics
@@ -92,10 +60,12 @@ const PlayerDetail: React.FC = () => {
           const result = play.results.find((r) => r.player_id === Number(id));
           if (result) {
             // Add total players count to each result
-            return [{
-              ...result,
-              totalPlayers: getPlayerCount(play.results),
-            }];
+            return [
+              {
+                ...result,
+                totalPlayers: getPlayerCount(play.results),
+              },
+            ];
           }
           return [];
         });
@@ -103,7 +73,8 @@ const PlayerDetail: React.FC = () => {
         if (playerResults.length === 0) return null;
 
         const totalPoints = playerResults.reduce(
-          (sum, result) => sum + getRankGradePoint(result.rank, result.totalPlayers),
+          (sum, result) =>
+            sum + getRankGradePoint(result.rank, result.totalPlayers),
           0
         );
 

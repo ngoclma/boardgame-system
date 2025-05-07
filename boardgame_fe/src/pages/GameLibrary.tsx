@@ -1,35 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "../components/common/Card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import ErrorMessage from "../components/common/ErrorMessage";
-import { getGames } from "../api/gameApi";
-import { Game } from "../models/Game";
 import { importBGGCollection } from "../api/importBgg";
+import { useGames } from '../hooks';
+import { useQueryClient } from '@tanstack/react-query';
 
 const GameLibrary: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [games, setGames] = useState<Game[]>([]);
+  const queryClient = useQueryClient();
+  const { data: games = [], isLoading, error } = useGames();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "avg_play_time">("name");
   const [importing, setImporting] = useState(false);
-
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        setLoading(true);
-        const gamesData = await getGames();
-        setGames(gamesData);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load games");
-        setLoading(false);
-      }
-    };
-
-    fetchGames();
-  }, []);
 
   const handleBGGImport = async () => {
     try {
@@ -37,9 +20,8 @@ const GameLibrary: React.FC = () => {
 
       const result = await importBGGCollection("HarryTr");
 
-      // Refresh games list with newly added games
-      const updatedGames = await getGames();
-      setGames(updatedGames);
+      // Invalidate and refetch games
+      await queryClient.invalidateQueries({ queryKey: ['games'] });
 
       // Show success message
       alert(`Successfully imported ${result.addedGames.length} games from BGG`);
@@ -59,8 +41,8 @@ const GameLibrary: React.FC = () => {
       return b.avg_play_time - a.avg_play_time;
     });
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
+    if (isLoading) return <LoadingSpinner />;
+    if (error) return <ErrorMessage message={(error as Error).message} />;
 
   return (
     <div className="container mx-auto px-4 py-8">

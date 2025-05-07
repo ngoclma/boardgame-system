@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Card from "../components/common/Card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
@@ -18,78 +19,69 @@ import {
   getGradeLabel,
   getGradeColor,
 } from "../utils/gradeCalculator";
-import { Game } from "../models/Game";
 import { Player } from "../models/Player";
 import { Play } from "../models/Play";
 
-interface DashboardStats {
-  totalGames: number;
-  totalPlayers: number;
-  totalPlays: number;
-  recentPlays: Array<{
-    game_play_id: number;
-    game_name: string;
-    date: string;
-    winner: string;
-  }>;
-  topPlayers: Array<{
-    player_name: string;
-    winRate: number;
-    totalPlays: number;
-  }>;
-}
-
 const Dashboard: React.FC = () => {
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalGames: 0,
-    totalPlayers: 0,
-    totalPlays: 0,
-    recentPlays: [],
-    topPlayers: [],
-  });
-  const [games, setGames] = useState<Game[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [gamePlays, setGamePlays] = useState<Play[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | undefined>(
     undefined
   );
   const [minPlays, setMinPlays] = useState<number>(10);
+  const { data: games = [], isLoading: gamesLoading } = useQuery({
+    queryKey: ["games"],
+    queryFn: getGames,
+  });
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const [gamesData, playersData, gamePlaysData] = await Promise.all([
-          getGames(),
-          getPlayers(),
-          getGamePlays(),
-        ]);
+  const { data: players = [], isLoading: playersLoading } = useQuery({
+    queryKey: ["players"],
+    queryFn: getPlayers,
+  });
 
-        // Ensure we have arrays even if API returns null/undefined
-        const gamesArray = Array.isArray(gamesData) ? gamesData : [];
-        const playersArray = Array.isArray(playersData) ? playersData : [];
-        const gamePlaysArray = Array.isArray(gamePlaysData)
-          ? gamePlaysData
-          : [];
+  const { data: gamePlays = [], isLoading: playsLoading } = useQuery({
+    queryKey: ["gamePlays"],
+    queryFn: getGamePlays,
+  });
 
-        setGames(gamesArray);
-        setPlayers(playersArray);
-        setGamePlays(gamePlaysArray);
+  const stats = useMemo(() => {
+    try {
+      if (!games.length || !players.length || !gamePlays.length) {
+        return {
+          totalGames: 0,
+          totalPlayers: 0,
+          totalPlays: 0,
+          recentPlays: [],
+        };
+      }
 
-        // Process data for dashboard stats with null checks
-        const recentPlays = gamePlaysArray
-          .filter((play) => play && play.results) // Ensure play and results exist
-          .sort(
-            (a, b) =>
+      const recentPlays = gamePlays
+        .filter((play) => {
+          try {
+            return (
+              play && Array.isArray(play.results) && play.results.length > 0
+            );
+          } catch (err) {
+            console.error("Error filtering play:", err);
+            return false;
+          }
+        })
+        .sort((a, b) => {
+          try {
+            return (
               new Date(b.start_time).getTime() -
               new Date(a.start_time).getTime()
-          )
-          .slice(0, 5)
-          .map((play) => {
+            );
+          } catch (err) {
+            console.error("Error sorting dates:", err);
+            return 0;
+          }
+        })
+        .slice(0, 5)
+        .map((play) => {
+          try {
             const winnerResult = play.results?.find((r) => r?.rank === 1);
-            const game = gamesArray.find((g) => g?.game_id === play.game_id);
-            const winner = playersArray.find(
+            const game = games.find((g) => g?.game_id === play.game_id);
+            const winner = players.find(
               (p) => p?.player_id === winnerResult?.player_id
             );
 
@@ -101,61 +93,38 @@ const Dashboard: React.FC = () => {
                 : "Unknown Date",
               winner: winner?.name || "Unknown Player",
             };
-          });
-
-        // Calculate top players with null checks
-        const playerStats = playersArray
-          .map((player) => {
-            const playerPlays = gamePlaysArray.filter((play) =>
-              play?.results?.some((r) => r?.player_id === player.player_id)
-            );
-
-            const wins = playerPlays.filter((play) =>
-              play?.results?.some(
-                (r) => r?.player_id === player.player_id && r?.rank === 1
-              )
-            ).length;
-
-            const totalPlays = playerPlays.length;
-            const winRate = totalPlays > 0 ? (wins / totalPlays) * 100 : 0;
-
+          } catch (err) {
+            console.error("Error mapping play data:", err);
             return {
-              player_name: player.name,
-              winRate: Number(winRate.toFixed(1)),
-              totalPlays,
+              game_play_id: play.play_id || 0,
+              game_name: "Error Loading Game",
+              date: "Unknown Date",
+              winner: "Unknown Player",
             };
-          })
-          .filter((player) => player.totalPlays >= 3) // Optional: Only show players with minimum games
-          .sort((a, b) => b.winRate - a.winRate)
-          .slice(0, 5);
-
-        setStats({
-          totalGames: gamesArray.length,
-          totalPlayers: playersArray.length,
-          totalPlays: gamePlaysArray.length,
-          recentPlays,
-          topPlayers: playerStats,
+          }
         });
 
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
-        setLoading(false);
+      return {
+        totalGames: games.length || 0,
+        totalPlayers: players.length || 0,
+        totalPlays: gamePlays.length || 0,
+        recentPlays,
+      };
+    } catch (err) {
+      console.error("Error calculating dashboard stats:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to calculate stats"
+      );
+      return {
+        totalGames: 0,
+        totalPlayers: 0,
+        totalPlays: 0,
+        recentPlays: [],
+      };
+    }
+  }, [games, players, gamePlays]);
 
-        // Set default values on error
-        setStats({
-          totalGames: 0,
-          totalPlayers: 0,
-          totalPlays: 0,
-          recentPlays: [],
-          topPlayers: [],
-        });
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+  const loading = gamesLoading || playersLoading || playsLoading;
 
   const getAvailableYears = (plays: Play[]): number[] => {
     const years = plays.map((play) => new Date(play.start_time).getFullYear());
