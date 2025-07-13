@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Card from "../components/common/Card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import ErrorMessage from "../components/common/ErrorMessage";
+import HowItWorkModal from "../components/dashboard/HowItWorkModal";
 import { getGamePlays } from "../api/gamePlayApi";
 import { getPlayers } from "../api/playerApi";
 import { getGames } from "../api/gameApi";
@@ -28,6 +29,8 @@ const Dashboard: React.FC = () => {
     undefined
   );
   const [minPlays, setMinPlays] = useState<number>(10);
+  const [showRankingInfo, setShowRankingInfo] = useState(false);
+
   const { data: games = [], isLoading: gamesLoading } = useQuery({
     queryKey: ["games"],
     queryFn: getGames,
@@ -237,7 +240,21 @@ const Dashboard: React.FC = () => {
 
       {/* Overall Player Rankings */}
       <div className="mt-8 mb-8">
-        <Card title="Player Rankings">
+        <Card
+          title={
+            <div className="flex items-center justify-between">
+              <span>Player Rankings</span>
+              <button
+                onClick={() => setShowRankingInfo(true)}
+                className="text-white-500 hover:underline text-xs"
+                type="button"
+                aria-label="How rankings work"
+              >
+                How it works?
+              </button>
+            </div>
+          }
+        >
           <div className="mb-4 flex justify-end space-x-4">
             <div className="flex items-center space-x-2">
               <label className="text-sm text-gray-600">Min. Plays:</label>
@@ -362,6 +379,8 @@ const Dashboard: React.FC = () => {
           </div>
         </Card>
       </div>
+      {/* How It Works Modal */}
+      <HowItWorkModal open={showRankingInfo} onClose={() => setShowRankingInfo(false)} />
     </div>
   );
 };

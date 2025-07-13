@@ -4,7 +4,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import Card from "../common/Card";
 import LoadingSpinner from "../common/LoadingSpinner";
 import ErrorMessage from "../common/ErrorMessage";
-import { getGamePlay, updateGamePlay } from "../../api/gamePlayApi";
+import {
+  getGamePlay,
+  updateGamePlay,
+  deleteGamePlay,
+} from "../../api/gamePlayApi";
 import { getGames } from "../../api/gameApi";
 import { getPlayers } from "../../api/playerApi";
 import { Game } from "../../models/Game";
@@ -98,6 +102,28 @@ const EditGamePlay: React.FC = () => {
     }));
   };
 
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this game play? This action cannot be undone."
+      )
+    )
+      return;
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteGamePlay(Number(id));
+      queryClient.invalidateQueries({ queryKey: ["gamePlays"] });
+      navigate("/game-plays");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to delete game play"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -126,7 +152,7 @@ const EditGamePlay: React.FC = () => {
       };
 
       await updateGamePlay(Number(id), payload);
-      queryClient.invalidateQueries({ queryKey: ['gamePlays'] });
+      queryClient.invalidateQueries({ queryKey: ["gamePlays"] });
       navigate(`/game-plays/${id}`);
     } catch (err) {
       console.error("Error updating game play:", err);
@@ -145,7 +171,7 @@ const EditGamePlay: React.FC = () => {
     <div className="max-w-3xl mx-auto py-6 px-4">
       <Card title="Edit Game Play">
         {error && <ErrorMessage message={error} />}
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -335,6 +361,13 @@ const EditGamePlay: React.FC = () => {
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Delete
+            </button>
             <button
               type="button"
               onClick={() => navigate(`/game-plays/${id}`)}
