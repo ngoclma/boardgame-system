@@ -1,5 +1,6 @@
 import requests
 import xml.etree.ElementTree as ET
+import os
 from models.game import Game
 from extensions import db
 from datetime import datetime
@@ -8,10 +9,29 @@ import time
 
 def import_bgg_collection(username):
     url = f'https://boardgamegeek.com/xmlapi2/collection?username={username}'
-    response = requests.get(url)
-    
+
+    # Include BGG token in request headers if provided via environment
+    headers = {}
+    bgg_token = os.getenv('BGG_TOKEN')
+    if not bgg_token:
+        raise Exception('BGG_TOKEN environment variable not set. Create a token at https://boardgamegeek.com/applications and set BGG_TOKEN.')
+    # BGG requires Authorization: Bearer <token>
+    headers['Authorization'] = f'Bearer {bgg_token}'
+
+    # Use a timeout and return more helpful errors for auth failures / HTTP issues
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+    except requests.RequestException as e:
+        raise Exception(f'Failed to fetch BGG collection: {str(e)}')
+
+    # Explicitly surface authentication failures
+    if response.status_code == 401:
+        www = response.headers.get('www-authenticate')
+        raise Exception(f'BGG authentication failed (401). WWW-Authenticate: {www}')
+
     if response.status_code != 200:
-        raise Exception('Failed to fetch BGG collection')
+        body = response.text or ''
+        raise Exception(f'Failed to fetch BGG collection: status={response.status_code} body={body[:500]}')
     
     root = ET.fromstring(response.content)
     added_games = []
