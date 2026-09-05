@@ -13,6 +13,8 @@ import { cleanDescription } from "../../utils/textUtils";
 import {
   calculateAverageGameDuration,
   calculateAveragePlayTimeByPlayerCount,
+  calculateCharacterPlayStats,
+  calculatePlayerPlayStats,
 } from "../../utils/calculations";
 import { usePlayers, useGamePlays, useGameDetail } from '../../hooks';
 
@@ -29,6 +31,14 @@ const GameDetail: React.FC = () => {
   }, [allGamePlays, id]);
   const averagePlayTimeByPlayerCount = useMemo(
     () => calculateAveragePlayTimeByPlayerCount(gamePlays),
+    [gamePlays]
+  );
+  const playerPlayStats = useMemo(
+    () => calculatePlayerPlayStats(gamePlays),
+    [gamePlays]
+  );
+  const characterPlayStats = useMemo(
+    () => calculateCharacterPlayStats(gamePlays),
     [gamePlays]
   );
 
@@ -234,6 +244,99 @@ const GameDetail: React.FC = () => {
               </div>
             ))}
           </div>
+        </Card>
+
+        {/* Play Stats */}
+        <Card title="Play Stats">
+          {playerPlayStats.length === 0 ? (
+            <p className="py-4 text-gray-500">No play stats recorded yet</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b text-xs uppercase text-gray-500">
+                  <tr>
+                    <th scope="col" className="px-2 py-3 font-medium">
+                      Player
+                    </th>
+                    <th scope="col" className="px-2 py-3 font-medium">
+                      Characters Used
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {playerPlayStats.map((stat) => {
+                    const player = players.find(
+                      (item) => item.player_id === stat.player_id
+                    );
+
+                    return (
+                      <tr key={stat.player_id}>
+                        <td className="px-2 py-3 font-medium">
+                          <Link
+                            to={`/players/${stat.player_id}`}
+                            className="hover:text-blue-600"
+                          >
+                            {player?.name || "Unknown Player"}
+                          </Link>
+                        </td>
+                        <td className="px-2 py-3 text-gray-600">
+                          {stat.characters.length > 0
+                            ? stat.characters.join(", ")
+                            : "No character recorded"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+
+        {/* Character Stats */}
+        <Card title="Character Stats">
+          {characterPlayStats.length === 0 ? (
+            <p className="py-4 text-gray-500">
+              No character stats recorded yet
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b text-xs uppercase text-gray-500">
+                  <tr>
+                    <th scope="col" className="px-2 py-3 font-medium">
+                      Character
+                    </th>
+                    <th scope="col" className="px-2 py-3 font-medium">
+                      Plays
+                    </th>
+                    <th scope="col" className="px-2 py-3 font-medium">
+                      Average Rank
+                    </th>
+                    <th scope="col" className="px-2 py-3 font-medium">
+                      Average Score
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {characterPlayStats.map((stat) => (
+                    <tr key={stat.character}>
+                      <td className="px-2 py-3 font-medium">{stat.character}</td>
+                      <td className="px-2 py-3 text-gray-600">{stat.play_count}</td>
+                      <td className="px-2 py-3 text-gray-600">
+                        {stat.average_rank.toFixed(2)}
+                      </td>
+                      <td className="px-2 py-3 text-gray-600">
+                        {stat.average_score === null
+                          ? "N/A"
+                          : stat.average_score.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
 
         {/* Game Plays */}

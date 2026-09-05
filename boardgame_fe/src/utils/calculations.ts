@@ -121,3 +121,108 @@ export const calculateAveragePlayTimeByPlayerCount = (
     ])
   );
 };
+
+export interface PlayerPlayStats {
+  player_id: number;
+  play_count: number;
+  characters: string[];
+}
+
+export interface CharacterPlayStats {
+  character: string;
+  play_count: number;
+  average_rank: number;
+  average_score: number | null;
+}
+
+/** Remove parenthetical details so equivalent character names are grouped. */
+export const normalizeCharacterName = (character: string): string =>
+  character.replace(/\s*\([^)]*\)/g, '').trim();
+
+/**
+ * Collect the characters recorded for each player across a game's plays.
+ * Character names are stored in the result notes field.
+ */
+export const calculatePlayerPlayStats = (plays: Play[]): PlayerPlayStats[] => {
+  const statsByPlayer: Record<number, { play_count: number; characters: Set<string> }> = {};
+
+  plays.forEach((play) => {
+    play.results?.forEach((result) => {
+      statsByPlayer[result.player_id] ??= {
+        play_count: 0,
+        characters: new Set<string>(),
+      };
+
+      statsByPlayer[result.player_id].play_count += 1;
+
+      const character = result.notes
+        ? normalizeCharacterName(result.notes)
+        : '';
+      if (character) {
+        statsByPlayer[result.player_id].characters.add(character);
+      }
+    });
+  });
+
+  return Object.entries(statsByPlayer)
+    .map(([playerId, stats]) => ({
+      player_id: Number(playerId),
+      play_count: stats.play_count,
+      characters: Array.from(stats.characters).sort((a, b) => a.localeCompare(b)),
+    }))
+    .sort((a, b) => a.player_id - b.player_id);
+};
+
+/**
+ * Calculate average rank and play count for each character used in a game's plays.
+ */
+export const calculateCharacterPlayStats = (
+  plays: Play[]
+): CharacterPlayStats[] => {
+  const statsByCharacter: Record<string, { ranks: number[]; scores: number[] }> = {};
+
+  plays.forEach((play) => {
+    play.results?.forEach((result) => {
+      const character = result.notes
+        ? normalizeCharacterName(result.notes)
+        : '';
+
+      if (!character || typeof result.rank !== 'number') return;
+
+      statsByCharacter[character] ??= { ranks: [], scores: [] };
+      statsByCharacter[character].ranks.push(result.rank);
+
+      if (typeof result.score === 'number') {
+        statsByCharacter[character].scores.push(result.score);
+      }
+    });
+  });
+
+  return Object.entries(statsByCharacter)
+    .map(([character, stats]) => ({
+      character,
+      play_count: stats.ranks.length,
+      average_rank: Number(
+        (stats.ranks.reduce((sum, rank) => sum + rank, 0) / stats.ranks.length).toFixed(2)
+      ),
+      average_score:
+        stats.scores.length > 0
+          ? Number(
+              (stats.scores.reduce((sum, score) => sum + score, 0) / stats.scores.length).toFixed(2)
+            )
+          : null,
+    }))
+    .sort((a, b) => {
+      if (a.average_rank !== b.average_rank) {
+        return a.average_rank - b.average_rank;
+      }
+
+      if (a.average_score === null && b.average_score !== null) return 1;
+      if (a.average_score !== null && b.average_score === null) return -1;
+      if (a.average_score !== b.average_score) {
+        return (b.average_score ?? 0) - (a.average_score ?? 0);
+      }
+
+      return a.character.localeCompare(b.character);
+    });
+};
