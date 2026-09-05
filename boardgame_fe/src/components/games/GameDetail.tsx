@@ -10,6 +10,10 @@ import {
 } from "../../utils/gradeCalculator";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { cleanDescription } from "../../utils/textUtils";
+import {
+  calculateAverageGameDuration,
+  calculateAveragePlayTimeByPlayerCount,
+} from "../../utils/calculations";
 import { usePlayers, useGamePlays, useGameDetail } from '../../hooks';
 
 const GameDetail: React.FC = () => {
@@ -23,6 +27,10 @@ const GameDetail: React.FC = () => {
   const gamePlays = useMemo(() => {
     return allGamePlays.filter((play) => play?.game_id === Number(id));
   }, [allGamePlays, id]);
+  const averagePlayTimeByPlayerCount = useMemo(
+    () => calculateAveragePlayTimeByPlayerCount(gamePlays),
+    [gamePlays]
+  );
 
   const getComplexityColor = (complexity: number): string => {
     if (!complexity && complexity !== 0) return "text-gray-500";
@@ -149,19 +157,33 @@ const GameDetail: React.FC = () => {
                 Average Play Time
               </h3>
               <p className="text-2xl font-bold text-green-600">
-                {gamePlays?.length > 0
-                  ? Math.round(
-                      gamePlays.reduce((acc, play) => {
-                        if (!play?.start_time || !play?.end_time) return acc;
-                        const duration =
-                          new Date(play.end_time).getTime() -
-                          new Date(play.start_time).getTime();
-                        return acc + duration / (1000 * 60);
-                      }, 0) / gamePlays.length
-                    )
-                  : 0}{" "}
+                {calculateAverageGameDuration(gamePlays)}{" "}
                 minutes
               </p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">
+                Average by Player Count
+              </h3>
+              {Object.entries(averagePlayTimeByPlayerCount).length > 0 ? (
+                <div className="mt-2 space-y-1 text-sm">
+                  {Object.entries(averagePlayTimeByPlayerCount)
+                    .sort(([a], [b]) => Number(a) - Number(b))
+                    .map(([playerCount, averageDuration]) => (
+                      <div
+                        key={playerCount}
+                        className="flex justify-between text-gray-700"
+                      >
+                        <span>{playerCount} players</span>
+                        <span className="font-medium">{averageDuration} min</span>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="mt-1 text-sm text-gray-500">
+                  No completed plays recorded yet
+                </p>
+              )}
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Complexity</h3>

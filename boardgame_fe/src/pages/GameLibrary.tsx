@@ -4,15 +4,31 @@ import Card from "../components/common/Card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import ErrorMessage from "../components/common/ErrorMessage";
 import { importBGGCollection } from "../api/importBgg";
-import { useGames } from '../hooks';
+import { useGames, useGamePlays } from '../hooks';
 import { useQueryClient } from '@tanstack/react-query';
+import { calculateAveragePlayTimeByPlayerCount } from "../utils/calculations";
 
 const GameLibrary: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: games = [], isLoading, error } = useGames();
+  const { data: games = [], isLoading: gamesLoading, error: gamesError } = useGames();
+  const {
+    data: gamePlays = [],
+    isLoading: playsLoading,
+    error: playsError,
+  } = useGamePlays();
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "avg_play_time">("name");
+  const [sortBy, setSortBy] = useState<
+    "name" | "avg_play_time" | "actual_play_time_asc" | "actual_play_time_desc"
+  >("name");
+  const [playerCount, setPlayerCount] = useState(2);
   const [importing, setImporting] = useState(false);
+
+  const availablePlayerCounts = Array.from(
+    new Set(gamePlays.flatMap((play) => play.results?.length ?? 0).filter((count) => count > 0))
+  ).sort((a, b) => a - b);
+  const selectedPlayerCount = availablePlayerCounts.includes(playerCount)
+    ? playerCount
+    : availablePlayerCounts[0] ?? playerCount;
 
   const handleBGGImport = async () => {
     try {
@@ -32,17 +48,37 @@ const GameLibrary: React.FC = () => {
     }
   };
 
-  const filteredAndSortedGames = games
+  const filteredAndSortedGames = [...games]
     .filter((game) =>
       game.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name);
-      return b.avg_play_time - a.avg_play_time;
+      if (sortBy === "avg_play_time") return b.avg_play_time - a.avg_play_time;
+
+      const aAverage = calculateAveragePlayTimeByPlayerCount(
+        gamePlays.filter((play) => play.game_id === a.game_id)
+      )[selectedPlayerCount] ?? 0;
+      const bAverage = calculateAveragePlayTimeByPlayerCount(
+        gamePlays.filter((play) => play.game_id === b.game_id)
+      )[selectedPlayerCount] ?? 0;
+
+      if (aAverage === 0 && bAverage !== 0) return 1;
+      if (bAverage === 0 && aAverage !== 0) return -1;
+      return sortBy === "actual_play_time_asc"
+        ? aAverage - bAverage
+        : bAverage - aAverage;
     });
 
-    if (isLoading) return <LoadingSpinner />;
-    if (error) return <ErrorMessage message={(error as Error).message} />;
+    const getActualPlayTime = (gameId: number): number | undefined =>
+      calculateAveragePlayTimeByPlayerCount(
+        gamePlays.filter((play) => play.game_id === gameId)
+      )[selectedPlayerCount];
+
+    if (gamesLoading || playsLoading) return <LoadingSpinner />;
+    if (gamesError || playsError) {
+      return <ErrorMessage message={(gamesError || playsError as Error).message} />;
+    }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -67,12 +103,39 @@ const GameLibrary: React.FC = () => {
         />
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as "name" | "avg_play_time")}
+          onChange={(e) =>
+            setSortBy(
+              e.target.value as
+                | "name"
+                | "avg_play_time"
+                | "actual_play_time_asc"
+                | "actual_play_time_desc"
+            )
+          }
           className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="name">Sort by Name</option>
-          <option value="avg_play_time">Sort by Play Time</option>
+          <option value="avg_play_time">Sort by Catalog Play Time</option>
+          <option value="actual_play_time_asc" disabled={availablePlayerCounts.length === 0}>
+            Actual Play Time: Shortest to Longest
+          </option>
+          <option value="actual_play_time_desc" disabled={availablePlayerCounts.length === 0}>
+            Actual Play Time: Longest to Shortest
+          </option>
         </select>
+        {availablePlayerCounts.length > 0 && (
+          <select
+            value={selectedPlayerCount}
+            onChange={(e) => setPlayerCount(Number(e.target.value))}
+            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {availablePlayerCounts.map((count) => (
+              <option key={count} value={count}>
+                Display actual time for {count} players
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -104,7 +167,10 @@ const GameLibrary: React.FC = () => {
                 <p className="text-gray-600 mb-2">{game.publisher}</p>
                 <p className="text-sm text-gray-500">{game.release_year}</p>
                 <div className="mt-4 text-sm text-gray-600">
-                  {game.min_players}-{game.max_players} players • {game.avg_play_time} min
+                  {game.min_players}-{game.max_players} players • Catalog: {game.avg_play_time} min
+                </div>
+                <div className="mt-1 text-sm font-medium text-blue-600">
+                  Actual ({selectedPlayerCount} players): {getActualPlayTime(game.game_id) ?? "No plays"} min
                 </div>
                 <p className="mt-2 text-sm text-gray-600 line-clamp-2">
                   {game.description}
