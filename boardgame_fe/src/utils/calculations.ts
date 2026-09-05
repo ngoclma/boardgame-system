@@ -1,5 +1,5 @@
 // src/utils/calculations.ts
-import { Play, PlayResult } from '../models/Play';
+import { Play } from '../models/Play';
 
 /**
  * Calculate victory points based on player rank and total players

@@ -21,6 +21,8 @@ A web application for tracking boardgame plays, player rankings, and game statis
 
 ## Getting Started
 
+Update environment in dev: conda activate boardgame
+
 ### Backend
 
 1. Install dependencies:
