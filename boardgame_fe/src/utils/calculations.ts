@@ -144,13 +144,13 @@ export const normalizeCharacterName = (character: string): string =>
  * Character names are stored in the result notes field.
  */
 export const calculatePlayerPlayStats = (plays: Play[]): PlayerPlayStats[] => {
-  const statsByPlayer: Record<number, { play_count: number; characters: Set<string> }> = {};
+  const statsByPlayer: Record<number, { play_count: number; characters: Map<string, number> }> = {};
 
   plays.forEach((play) => {
     play.results?.forEach((result) => {
       statsByPlayer[result.player_id] ??= {
         play_count: 0,
-        characters: new Set<string>(),
+        characters: new Map<string, number>(),
       };
 
       statsByPlayer[result.player_id].play_count += 1;
@@ -159,7 +159,8 @@ export const calculatePlayerPlayStats = (plays: Play[]): PlayerPlayStats[] => {
         ? normalizeCharacterName(result.notes)
         : '';
       if (character) {
-        statsByPlayer[result.player_id].characters.add(character);
+        const characterCount = statsByPlayer[result.player_id].characters.get(character) ?? 0;
+        statsByPlayer[result.player_id].characters.set(character, characterCount + 1);
       }
     });
   });
@@ -168,7 +169,9 @@ export const calculatePlayerPlayStats = (plays: Play[]): PlayerPlayStats[] => {
     .map(([playerId, stats]) => ({
       player_id: Number(playerId),
       play_count: stats.play_count,
-      characters: Array.from(stats.characters).sort((a, b) => a.localeCompare(b)),
+      characters: Array.from(stats.characters.entries())
+        .sort(([characterA], [characterB]) => characterA.localeCompare(characterB))
+        .map(([character, count]) => (count > 1 ? `${character} x ${count}` : character)),
     }))
     .sort((a, b) => a.player_id - b.player_id);
 };

@@ -281,7 +281,7 @@ const GameDetail: React.FC = () => {
                         </td>
                         <td className="px-2 py-3 text-gray-600">
                           {stat.characters.length > 0
-                            ? stat.characters.join(", ")
+                            ? stat.characters.join("; ")
                             : "No character recorded"}
                         </td>
                       </tr>
