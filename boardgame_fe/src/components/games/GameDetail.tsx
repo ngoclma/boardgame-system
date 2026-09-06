@@ -264,12 +264,25 @@ const GameDetail: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {playerPlayStats.map((stat) => {
-                    const player = players.find(
-                      (item) => item.player_id === stat.player_id
-                    );
+                  {[...playerPlayStats]
+                    .sort((a, b) => {
+                      const playerA = players.find(
+                        (item) => item.player_id === a.player_id
+                      );
+                      const playerB = players.find(
+                        (item) => item.player_id === b.player_id
+                      );
 
-                    return (
+                      return (playerA?.name || "Unknown Player").localeCompare(
+                        playerB?.name || "Unknown Player"
+                      );
+                    })
+                    .map((stat) => {
+                      const player = players.find(
+                        (item) => item.player_id === stat.player_id
+                      );
+
+                      return (
                       <tr key={stat.player_id}>
                         <td className="px-2 py-3 font-medium">
                           <Link
@@ -285,8 +298,8 @@ const GameDetail: React.FC = () => {
                             : "No character recorded"}
                         </td>
                       </tr>
-                    );
-                  })}
+                      );
+                    })}
                 </tbody>
               </table>
             </div>

@@ -16,6 +16,32 @@ import { Player } from "../../models/Player";
 import { Play, PlayResult } from "../../models/Play";
 import { TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 
+const formatDateTimeLocal = (value?: string): string => {
+  if (!value) return "";
+
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
+  );
+  if (!match) return "";
+
+  const utcTime = new Date(
+    Date.UTC(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3]),
+      Number(match[4]),
+      Number(match[5]),
+      Number(match[6] || 0)
+    )
+  );
+  utcTime.setUTCHours(utcTime.getUTCHours() + 8);
+  const pad = (part: number) => part.toString().padStart(2, "0");
+
+  return `${utcTime.getUTCFullYear()}-${pad(utcTime.getUTCMonth() + 1)}-${pad(
+    utcTime.getUTCDate()
+  )}T${pad(utcTime.getUTCHours())}:${pad(utcTime.getUTCMinutes())}`;
+};
+
 const EditGamePlay: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -46,7 +72,11 @@ const EditGamePlay: React.FC = () => {
 
         setGames(gamesData);
         setPlayers(playersData);
-        setFormData(gamePlayData);
+        setFormData({
+          ...gamePlayData,
+          start_time: formatDateTimeLocal(gamePlayData.start_time),
+          end_time: formatDateTimeLocal(gamePlayData.end_time),
+        });
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
